@@ -1,0 +1,78 @@
+﻿h1 { text-align: center; }
+
+.userInfo { }
+
+.exp-unselectable {
+    -khtml-user-select: none;
+    -moz-user-select: -moz-none;
+    /*
+     Introduced in IE 10.
+     See http://ie.microsoft.com/testdrive/HTML5/msUserSelect/
+   */
+    -ms-user-select: none;
+
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.exp-fullWidth { width: 100%; }
+
+.exp-alignRight { text-align: right !important; }
+
+.exp-inline { display: inline; }
+
+.exp-inlineBlock { display: inline-block; }
+
+.exp-marginBottom5 { margin-bottom: 5px; }
+
+.exp-balanceSection {
+    float: right;
+    width: 18em;
+}
+
+.exp-dialogLabel { width: 26%; }
+
+#tbodyTransac tr.editable { cursor: pointer; }
+
+.exp-editTransacColumn1 { width: 55%; }
+
+.exp-editTransacColumn2 { width: 35%; }
+
+.exp-padding10 { padding: 10px; }
+
+.exp-floatLeft { float: left; }
+
+.exp-clearBoth { clear: both; }
+
+.exp-deleteIcon img { opacity: 0.5; }
+
+.exp-deleteIcon:hover img { opacity: 0.8; }
+
+.exp-deleteIcon:focus { outline: none; }
+
+.exp-margin10, table { margin: 10px; }
+
+.exp-bold { font-weight: bold; }
+
+.exp-jqTable {
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.exp-jqTable td, .exp-jqTable th { padding: 5px; }
+
+.exp-jqTableCellBorder td, .exp-jqTableCellBorder th { border: 1px solid #ddd; }
+
+.exp-jqTableRowBorder tr { border: 1px solid #ddd; }
+
+.exp-thresholdLow { color: #e00; }
+
+.exp-mainContent { width: 800px; }
+
+.exp-PageWidth { max-width: 1100px; }
+
+.table thead th { text-align: center; }
+
+#ddlProfile { margin-bottom: 0; }
+
+#btnManageProfile .ui-button-text { padding: 0.2em; }
