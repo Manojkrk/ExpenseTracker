@@ -11,7 +11,7 @@
         </tr>
     </thead>
     <tbody id="tbodyTransac" data-bind="foreach: transacs">
-        <tr class="editable">
+        <tr class="editable" data-bind="click: $root.openEditTransac">
             <td data-bind="text: $.datepicker.formatDate('dd/mm/yy', Date)"></td>
             <td data-bind="text: (Amount > 0) ? 'Input' : 'Expense'"></td>
             <td data-bind="text: Description"></td>
@@ -21,7 +21,7 @@
                 <!-- ko text: Math.abs(Amount) --><!-- /ko -->
             </td>
             <td>
-                <a class="exp-deleteIcon" href="javascript:void(0);">
+                <a class="exp-deleteIcon" href="javascript:void(0);" data-bind="click: $root.deleteTransac">
                     <img src="/styles/images/delete.png" alt="Delete"/>
                 </a>
             </td>

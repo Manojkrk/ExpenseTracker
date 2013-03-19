@@ -30,3 +30,19 @@ function validateUser() {
     });
     return false;
 }
+
+function WebForm_FireDefaultButton(event, target) {
+    if (event.keyCode == 13) {
+        var src = event.srcElement || event.target;
+        if (src &&
+            ((src.tagName.toLowerCase() == "input") &&
+                (src.type.toLowerCase() == "submit" || src.type.toLowerCase() == "button")) ||
+            ((src.tagName.toLowerCase() == "a") &&
+                (src.href != null) && (src.href != "")) ||
+            (src.tagName.toLowerCase() == "textarea")) {
+            return true;
+        }
+        $(target).trigger('click');
+    }
+    return true;
+}

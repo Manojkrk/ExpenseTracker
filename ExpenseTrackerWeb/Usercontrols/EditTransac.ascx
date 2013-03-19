@@ -6,8 +6,10 @@
                 <label for="etrTransacTypeButtonset">Type</label>
             </div>
             <div id="etrTransacTypeButtonset" class="exp-inlineBlock">
-                <input id="etrTypeInput" type="radio" name="transacType" value="input"><label for="etrTypeInput">Input</label>
-                <input id="etrTypeExpense" type="radio" name="transacType" value="expense"><label for="etrTypeExpense">Expense</label>
+                <input id="etrTypeInput" type="radio" name="transacType" value="input" data-bind="buttonset: selectedTransacType" />
+                <label for="etrTypeInput">Input</label>
+                <input id="etrTypeExpense" type="radio" name="transacType" value="expense" data-bind="buttonset: selectedTransacType" />
+                <label for="etrTypeExpense">Expense</label>
             </div>
         </div>
         <div class="exp-fullWidth">
@@ -15,7 +17,7 @@
                 <label for="transacDatepicker">Date</label>
             </div>
             <div class="exp-inlineBlock">
-                <input id="transacDatepicker" type="date" class="exp-marginBottom5"/>
+                <input id="transacDatepicker" type="date" class="exp-marginBottom5" data-bind="datepicker: selectedTransac().Date" />
             </div>
         </div>
         <div class="exp-fullWidth">
@@ -23,7 +25,7 @@
                 <label for="txtTransacDescription">Description</label>
             </div>
             <div class="exp-inlineBlock">
-                <input id="txtTransacDescription" type="text"/>
+                <input id="txtTransacDescription" type="text" data-bind="value: selectedTransac().Description" />
             </div>
         </div>
         <div class="exp-fullWidth">
@@ -31,19 +33,18 @@
                 <label for="txtTransacAmount">Amount (&#8377;)</label>
             </div>
             <div class="exp-inlineBlock">
-                <input id="txtTransacAmount" type="text"/>
+                <input id="txtTransacAmount" type="text" data-bind="value: Math.abs(selectedTransac().Amount)"/>
             </div>
         </div>
     </div>
     <div class="exp-editTransacColumn2 exp-padding10 exp-inlineBlock exp-floatLeft">
         <div class="exp-fullWidth">
-            <div id="etrPersons" class="exp-inlineBlock"></div>
+            <div id="etrPersons" class="exp-inlineBlock" data-bind="foreach: persons">
+                <div class="exp-fullWidth">
+                    <input type="checkbox" data-bind="value: Id, attr: { id: 'editTransacPerson_' + Id }" />
+                    <label data-bind="text: Name, attr: { for: 'editTransacPerson_' + Id }"></label>
+                </div>
+            </div>
         </div>
     </div>
-    <script id="tmplEditTransacPerson" type="text/x-jquery-tmpl">
-        <div class="exp-fullWidth">
-            <input id="editTransacPerson_${Id}" type="checkbox" value="${Id}" />
-            <label for="editTransacPerson_${Id}">${Name}</label>
-        </div>
-    </script>
 </div>

@@ -33,7 +33,16 @@ function ViewModel() {
     this.hideBalances = ko.computed(function() {
         return typeof(this.balances().TotalBalance) === 'undefined';
     }, this);
-    this.selectedTransac = ko.observable();
+    this.selectedTransac = ko.observable({});
+    this.selectedTransacType = ko.computed(function() {
+        if (this.selectedTransac().Amount > 0) {
+            return 'input';
+        } else if (this.selectedTransac().Amount < 0) {
+            return 'expense';
+        } else {
+            return '';
+        }
+    }, this);
 }
 
 ViewModel.prototype.openNewTransacDialog = function() {
@@ -56,14 +65,10 @@ ViewModel.prototype.refreshPersons = function() {
     var self = this;
     $.ajax({
         url: 'ExpenseTrackerService.svc/GetPersons',
-        dataType: "json",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
         data: JSON.stringify({ profileId: self.currentProfileId() }),
         success: function(result) {
             persons = result;
             self.persons(result);
-            $('#etrPersons').empty().append($('#tmplEditTransacPerson').tmpl(result));
         }
     });
 };
@@ -71,9 +76,6 @@ ViewModel.prototype.refreshTransacs = function() {
     var self = this;
     $.ajax({
         url: 'ExpenseTrackerService.svc/GetTransacs',
-        dataType: "json",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
         data: JSON.stringify({ profileId: self.currentProfileId() }),
         success: function(result) {
             result.forEach(function(transac) {
@@ -89,9 +91,6 @@ ViewModel.prototype.refreshBalances = function() {
     var self = this;
     $.ajax({
         url: 'ExpenseTrackerService.svc/GetBalances',
-        dataType: "json",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
         data: JSON.stringify({ profileId: self.currentProfileId() }),
         success: function(result) {
             self.balances(result);
@@ -100,18 +99,14 @@ ViewModel.prototype.refreshBalances = function() {
 };
 
 
-ViewModel.prototype.openEditTransac = function(transacRow) {
-    currentRow = transacRow;
-    var data = transacRow.tmplItem().data;
-    m.editTransac.datepicker.datepicker('setDate', (data.Date));
-    if (data.Amount > 0) {
-        $('#etrTypeInput').prop('checked', true);
-    } else {
-        $('#etrTypeExpense').prop('checked', true);
+ViewModel.prototype.openEditTransac = function(transac, e) {
+    if ($(e.target).is('exp-deleteIcon') || $(e.target).closest('.exp-deleteIcon').is('*')) {
+        return;
     }
+    vm.selectedTransac($.extend({}, transac));
+    var data = transac;
+    m.editTransac.datepicker.datepicker('setDate', (data.Date));
     m.editTransac.typeButtonset.buttonset('refresh');
-    $('#txtTransacDescription').val(data.Description);
-    $('#txtTransacAmount').val(Math.abs(data.Amount));
     m.editTransac.dialog.find('input').filter('[type=checkbox]').each(function() {
         this.checked = (data.PersonIds.indexOf(parseInt(this.value)) !== -1);
     });
@@ -121,15 +116,28 @@ ViewModel.prototype.openEditTransac = function(transacRow) {
         .dialog('open');
 };
 
+ViewModel.prototype.deleteTransac = function(transac) {
+    if (confirm("Do you want to delete the transaction '" + transac.Description + "'?")) {
+        $.ajax({
+            url: 'ExpenseTrackerService.svc/DeleteTransac',
+            data: JSON.stringify({ transacId: transac.Id }),
+            success: function(result) {
+                if (result !== true) {
+                    alert('error occured on save. Please try again');
+                }
+                vm.transacs.remove(transac);
+                vm.refreshBalances();
+            }
+        });
+    }
+};
+
 ViewModel.prototype.insertTransac = function(transac) {
     var self = this;
     var msTransac = $.extend({}, transac);
     msTransac.Date = transac.Date.toMsJson();
     $.ajax({
         url: 'ExpenseTrackerService.svc/InsertTransac',
-        dataType: "json",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
         data: JSON.stringify({
             profileId: self.currentProfileId(),
             transac: msTransac
@@ -178,7 +186,93 @@ $.formatJsonDate = function(str) {
 
 // Knockout custom bindings
 
-ko.bindingHandlers.jqueryButtonRefresh
+ko.bindingHandlers.buttonset = {
+    'init': function(element, valueAccessor, allBindingsAccessor) {
+        var updateHandler = function() {
+            var valueToWrite;
+            if (element.type == "checkbox") {
+                valueToWrite = element.checked;
+            } else if ((element.type == "radio") && (element.checked)) {
+                valueToWrite = element.value;
+            } else {
+                return; // "checked" binding only responds to checkboxes and selected radio buttons
+            }
+
+            var modelValue = valueAccessor();
+            if ((element.type == "checkbox") && (ko.utils.unwrapObservable(modelValue) instanceof Array)) {
+                // For checkboxes bound to an array, we add/remove the checkbox value to that array
+                // This works for both observable and non-observable arrays
+                var existingEntryIndex = ko.utils.arrayIndexOf(ko.utils.unwrapObservable(modelValue), element.value);
+                if (element.checked && (existingEntryIndex < 0)) modelValue.push(element.value);
+                else if ((!element.checked) && (existingEntryIndex >= 0)) modelValue.splice(existingEntryIndex, 1);
+            } else if (ko.isWriteableObservable(modelValue)) {
+                if (modelValue() !== valueToWrite) { // Suppress repeated events when there's nothing new to notify (some browsers raise them)
+                    modelValue(valueToWrite);
+                }
+            } else {
+                var allBindings = allBindingsAccessor();
+                if (allBindings['_ko_property_writers'] && allBindings['_ko_property_writers']['checked']) {
+                    allBindings['_ko_property_writers']['checked'](valueToWrite);
+                }
+            }
+        };
+        ko.utils.registerEventHandler(element, "click", updateHandler);
+
+        // IE 6 won't allow radio buttons to be selected unless they have a name
+        if ((element.type == "radio") && !element.name)
+            ko.bindingHandlers['uniqueName']['init'](element, function() {
+                return true;
+            });
+    },
+
+    'update': function(element, valueAccessor) {
+        var value = ko.utils.unwrapObservable(valueAccessor());
+        if (element.type == "checkbox") {
+            if (value instanceof Array) {
+                // When bound to an array, the checkbox being checked represents its value being present in that array
+                element.checked = ko.utils.arrayIndexOf(value, element.value) >= 0;
+            } else {
+                // When bound to anything other value (not an array), the checkbox being checked represents the value being trueish
+                element.checked = value;
+            }
+            /////////////// addded code to ko checked binding /////////////////
+            $(element).button('refresh');
+            /////////////// end add ///////////////////////////
+            // Workaround for IE 6 issue - it fails to apply checked state to dynamically-created checkboxes if you merely say "element.checked = true"
+            if (value && ko.utils.isIe6) element.mergeAttributes(document.createElement("<input type='checkbox' checked='checked' />"), false);
+        } else if (element.type == "radio") {
+            element.checked = (element.value == value);
+            /////////////// addded code to ko checked binding /////////////////
+            $(element).button('refresh');
+            /////////////// end add ///////////////////////////
+            // Workaround for IE 6/7 issue - it fails to apply checked state to dynamically-created radio buttons if you merely say "element.checked = true"
+            if ((element.value == value) && (ko.utils.isIe6 || ko.utils.isIe7)) element.mergeAttributes(document.createElement("<input type='radio' checked='checked' />"), false);
+        }
+    }
+};
+ko.bindingHandlers.datepicker = {
+    init: function (element, valueAccessor, allBindingsAccessor) {
+        $(element).datepicker('option', 'onSelect', function() {
+            var valueToWrite = $(element).datepicker('getDate');
+            var modelValue = valueAccessor();
+            if (ko.isWriteableObservable(modelValue)) {
+                if (modelValue.peek() !== valueToWrite) { // Suppress repeated events when there's nothing new to notify (some browsers raise them)
+                    modelValue(valueToWrite);
+                }
+            } else { //non-observable
+                allBindingsAccessor()._ko_property_writers.datepicker(valueToWrite);
+            }
+        });
+    },
+    update: function(element, valueAccessor, allBindingsAccessor) {
+        // First get the latest data that we're bound to
+        var value = valueAccessor(), allBindings = allBindingsAccessor();
+
+        // Next, whether or not the supplied model property is observable, get its current value
+        var valueUnwrapped = ko.utils.unwrapObservable(value);
+        $(element).datepicker('setDate', value);
+    }
+};
 
 // extending dialog to have default button
 
@@ -188,8 +282,13 @@ ko.bindingHandlers.jqueryButtonRefresh
 $(document).ready(startup);
 
 function startup() {
+    $.ajaxSetup({
+        dataType: "json",
+        type: "POST",
+        contentType: "application/json; charset=utf-8"
+    });
     initEditTransac();
-    init();
+    initDashboard();
     vm = new ViewModel();
     ko.applyBindings(vm);
     vm.refreshPersons();
@@ -197,7 +296,7 @@ function startup() {
     vm.refreshBalances();
 }
 
-function init() {
+function initDashboard() {
     $('#btnNewTransac').button();
 
     $('#btnManageProfile').button({
@@ -205,16 +304,6 @@ function init() {
             primary: 'ui-icon-gear'
         },
         text: false
-    });
-
-    $('#tbodyTransac').on('click', '.exp-deleteIcon', function() {
-        var transacRow = $(this);
-        if (confirm("Do you want to delete the transaction '" + transacRow.tmplItem().data.Description + "'?")) {
-            deleteTransac(transacRow);
-        }
-        return false;
-    }).on('click', '.editable', function() {
-        openEditTransac($(this));
     });
 }
 
@@ -326,23 +415,6 @@ function updateTransac(transac) {
             if (result !== true) {
                 alert('error occured on save. Please try again');
             }
-            vm.refreshBalances();
-        }
-    });
-}
-
-function deleteTransac(transacRow) {
-    $.ajax({
-        url: 'ExpenseTrackerService.svc/DeleteTransac',
-        dataType: "json",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        data: JSON.stringify({ transacId: transacRow.tmplItem().data.Id }),
-        success: function(result) {
-            if (result !== true) {
-                alert('error occured on save. Please try again');
-            }
-            transacRow.closest('tr').remove();
             vm.refreshBalances();
         }
     });

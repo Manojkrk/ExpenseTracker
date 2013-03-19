@@ -63,7 +63,7 @@
                                         </tr>--%>
                                         <tr>
                                             <td align="right" colspan="2">
-                                                <button type="button" id="btnLogin" name="expenseTrackerLogin$LoginButton" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false">Sign In</button>
+                                                <button type="submit" id="btnLogin" name="expenseTrackerLogin$LoginButton" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false">Sign In</button>
                                             </td>
                                         </tr>
                                     </tbody></table>
