@@ -6,9 +6,9 @@
                 <label for="etrTransacTypeButtonset">Type</label>
             </div>
             <div id="etrTransacTypeButtonset" class="exp-inlineBlock">
-                <input id="etrTypeInput" type="radio" name="transacType" value="input" data-bind="buttonset: selectedTransacType" />
+                <input id="etrTypeInput" type="radio" name="transacType" value="input" data-bind="jqchecked: selectedTransacType" />
                 <label for="etrTypeInput">Input</label>
-                <input id="etrTypeExpense" type="radio" name="transacType" value="expense" data-bind="buttonset: selectedTransacType" />
+                <input id="etrTypeExpense" type="radio" name="transacType" value="expense" data-bind="jqchecked: selectedTransacType" />
                 <label for="etrTypeExpense">Expense</label>
             </div>
         </div>
@@ -33,7 +33,7 @@
                 <label for="txtTransacAmount">Amount (&#8377;)</label>
             </div>
             <div class="exp-inlineBlock">
-                <input id="txtTransacAmount" type="text" data-bind="value: Math.abs(selectedTransac().Amount)"/>
+                <input id="txtTransacAmount" type="text" data-bind="value: isNaN(selectedTransac().Amount) ? '' : Math.abs(selectedTransac().Amount)"/>
             </div>
         </div>
     </div>
@@ -41,7 +41,7 @@
         <div class="exp-fullWidth">
             <div id="etrPersons" class="exp-inlineBlock" data-bind="foreach: persons">
                 <div class="exp-fullWidth">
-                    <input type="checkbox" data-bind="value: Id, attr: { id: 'editTransacPerson_' + Id }" />
+                    <input type="checkbox" data-bind="value: Id, jqchecked: $root.selectedTransac().PersonIds, attr: { id: 'editTransacPerson_' + Id }" />
                     <label data-bind="text: Name, attr: { for: 'editTransacPerson_' + Id }"></label>
                 </div>
             </div>

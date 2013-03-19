@@ -9,6 +9,15 @@ var m = {
     }
 };
 
+Array.prototype.lenientIndexOf = function(item) {
+    for (var i = 0; i < this.length; i++) {
+        if (this[i] == item) {
+            return i;
+        }
+    }
+    return -1;
+};
+
 var rowStatus = {
     ready: 'ready',
     creating: 'creating',
@@ -46,16 +55,7 @@ function ViewModel() {
 }
 
 ViewModel.prototype.openNewTransacDialog = function() {
-    currentRow = null;
-    m.editTransac.dialog
-        .find('input')
-        .filter('[type=text],[type=date]')
-        .val('')
-        .end()
-        .filter('[type=checkbox],[type=radio]')
-        .prop('checked', false);
-    m.editTransac.typeButtonset.buttonset('refresh');
-
+    vm.selectedTransac({});
     editTransacChanged = false;
     m.editTransac.dialog
         .dialog('option', 'title', 'New Transaction')
@@ -103,13 +103,7 @@ ViewModel.prototype.openEditTransac = function(transac, e) {
     if ($(e.target).is('exp-deleteIcon') || $(e.target).closest('.exp-deleteIcon').is('*')) {
         return;
     }
-    vm.selectedTransac($.extend({}, transac));
-    var data = transac;
-    m.editTransac.datepicker.datepicker('setDate', (data.Date));
-    m.editTransac.typeButtonset.buttonset('refresh');
-    m.editTransac.dialog.find('input').filter('[type=checkbox]').each(function() {
-        this.checked = (data.PersonIds.indexOf(parseInt(this.value)) !== -1);
-    });
+    vm.selectedTransac($.extend(true, {}, transac));
 
     editTransacChanged = false;
     m.editTransac.dialog.dialog('option', 'title', 'Edit Transaction')
@@ -186,7 +180,7 @@ $.formatJsonDate = function(str) {
 
 // Knockout custom bindings
 
-ko.bindingHandlers.buttonset = {
+ko.bindingHandlers.jqchecked = {
     'init': function(element, valueAccessor, allBindingsAccessor) {
         var updateHandler = function() {
             var valueToWrite;
@@ -199,14 +193,15 @@ ko.bindingHandlers.buttonset = {
             }
 
             var modelValue = valueAccessor();
-            if ((element.type == "checkbox") && (ko.utils.unwrapObservable(modelValue) instanceof Array)) {
+            var modelValueUnwrapped = ko.utils.unwrapObservable(modelValue);
+            if ((element.type == "checkbox") && (modelValueUnwrapped instanceof Array)) {
                 // For checkboxes bound to an array, we add/remove the checkbox value to that array
                 // This works for both observable and non-observable arrays
-                var existingEntryIndex = ko.utils.arrayIndexOf(ko.utils.unwrapObservable(modelValue), element.value);
-                if (element.checked && (existingEntryIndex < 0)) modelValue.push(element.value);
+                var existingEntryIndex = modelValueUnwrapped.lenientIndexOf(element.value);
+                if (element.checked && (existingEntryIndex < 0)) modelValue.push(parseInt(element.value));
                 else if ((!element.checked) && (existingEntryIndex >= 0)) modelValue.splice(existingEntryIndex, 1);
-            } else if (ko.isWriteableObservable(modelValue)) {
-                if (modelValue() !== valueToWrite) { // Suppress repeated events when there's nothing new to notify (some browsers raise them)
+            } else if (ko.isObservable(modelValue)) {
+                if (ko.isWriteableObservable(modelValue) && modelValue.peek() !== valueToWrite) { // Suppress repeated events when there's nothing new to notify (some browsers raise them)
                     modelValue(valueToWrite);
                 }
             } else {
@@ -230,16 +225,13 @@ ko.bindingHandlers.buttonset = {
         if (element.type == "checkbox") {
             if (value instanceof Array) {
                 // When bound to an array, the checkbox being checked represents its value being present in that array
-                element.checked = ko.utils.arrayIndexOf(value, element.value) >= 0;
+                $(element).prop('checked', value.lenientIndexOf(element.value) >= 0);
             } else {
                 // When bound to anything other value (not an array), the checkbox being checked represents the value being trueish
-                element.checked = value;
+                $(element).prop('checked', typeof value !== "undefined" ? value : false);
             }
-            /////////////// addded code to ko checked binding /////////////////
-            $(element).button('refresh');
-            /////////////// end add ///////////////////////////
-            // Workaround for IE 6 issue - it fails to apply checked state to dynamically-created checkboxes if you merely say "element.checked = true"
-            if (value && ko.utils.isIe6) element.mergeAttributes(document.createElement("<input type='checkbox' checked='checked' />"), false);
+
+            $(element).filter('.ui-button').button('refresh');
         } else if (element.type == "radio") {
             element.checked = (element.value == value);
             /////////////// addded code to ko checked binding /////////////////
@@ -251,12 +243,12 @@ ko.bindingHandlers.buttonset = {
     }
 };
 ko.bindingHandlers.datepicker = {
-    init: function (element, valueAccessor, allBindingsAccessor) {
+    init: function(element, valueAccessor, allBindingsAccessor) {
         $(element).datepicker('option', 'onSelect', function() {
             var valueToWrite = $(element).datepicker('getDate');
             var modelValue = valueAccessor();
-            if (ko.isWriteableObservable(modelValue)) {
-                if (modelValue.peek() !== valueToWrite) { // Suppress repeated events when there's nothing new to notify (some browsers raise them)
+            if (ko.isObservable(modelValue)) {
+                if (ko.isWriteableObservable(modelValue) && modelValue.peek() !== valueToWrite) { // Suppress repeated events when there's nothing new to notify (some browsers raise them)
                     modelValue(valueToWrite);
                 }
             } else { //non-observable
@@ -419,6 +411,8 @@ function updateTransac(transac) {
         }
     });
 }
+
+// event to fire default button
 
 function WebForm_FireDefaultButton(event, target) {
     if (event.keyCode == 13) {
