@@ -22,20 +22,27 @@ namespace Manoj.ExpenseTracker.Core
             var decPassword = Encoding.UTF8.GetString(rsa.Decrypt(ToHexByte(password), false));
 
             var nounce = SessionHelper.Nounce;
-            if(!String.IsNullOrEmpty(nounce))
+            if (!String.IsNullOrEmpty(nounce))
             {
                 SessionHelper.Nounce = null;
                 if (decUsername.StartsWith(nounce) && decPassword.StartsWith(nounce))
                 {
+                    byte[] hashPassword;
                     const int maxSize = 55;
-                    var userId = Convert.ToInt32(ExpenseTrackerController.Db.ExecuteScalar("Sp_ValidateUser", decUsername.Substring(maxSize), decPassword.Substring(maxSize)));
+                    using (var hasher = new SHA512Managed())
+                    {
+                        var encoder = new ASCIIEncoding();
+                        var encoded = encoder.GetBytes(decPassword.Substring(maxSize));
+                        hashPassword = hasher.ComputeHash(encoded);
+                    }
+                    var userId = Convert.ToInt32(
+                        ExpenseTrackerController.Db.ExecuteScalar("Sp_ValidateUser", decUsername.Substring(maxSize), hashPassword));
                     if (userId != 0)
                     {
                         SessionHelper.UserId = userId;
                         return true;
                     }
                 }
-
             }
             return false;
         }
