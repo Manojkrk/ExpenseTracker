@@ -76,3 +76,17 @@
 #ddlProfile { margin-bottom: 0; }
 
 #btnManageProfile .ui-button-text { padding: 0.2em; }
+
+/* Login */
+
+.loginContainer {
+    padding: 50px;
+}
+
+.loginLabel {
+    min-width: 100px;
+}
+
+#btnLogin {
+    margin-left: 240px;
+}

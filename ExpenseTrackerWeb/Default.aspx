@@ -23,60 +23,34 @@
         <link href="styles/common.css" rel="stylesheet" type="text/css" />
     </head>
     <body>
-        <!--[if lt IE 7]>
-            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
-        <![endif]-->
-
-        <!-- This code is taken from http://twitter.github.com/bootstrap/examples/hero.html -->
-
         <form id="form1" runat="server">
             <asp:HiddenField runat="server" ID="hfUserName" />
             <asp:HiddenField runat="server" ID="hfPassword" />
             <asp:Button ID="btnPostback" style="display: none" runat="server" OnClick="btnPostback_Click"/>
         </form>
-        <div>
-            <table cellspacing="0" cellpadding="1" style="border-collapse: collapse;" id="expenseTrackerLogin">
-                <tbody>
-                    <tr>
-                        <td>
-                            <form onsubmit=" javascript:asdasd(); ">
-                                <table cellpadding="0">
-                                    <tbody>
-                                        <tr>
-                                            <td align="center" colspan="2">Log In</td>
-                                        </tr>
-                                        <tr>
-                                            <td align="right">
-                                                <label for="txtUsername">Email</label>
-                                            </td>
-                                            <td>
-                                                <input type="text" id="txtUsername" name="expenseTrackerLogin$UserName" />
-                                                <span style="visibility: hidden;" title="User Name is required." id="expenseTrackerLogin_UserNameRequired">*</span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td align="right"><label for="txtPassword">Password:</label>
-
-                                            </td>
-                                            <td>
-                                                <input type="password" id="txtPassword" name="expenseTrackerLogin$Password" />
-                                                <span style="visibility: hidden;" title="Password is required." id="expenseTrackerLogin_PasswordRequired">*</span>
-                                            </td>
-                                        </tr>
-                                        <%--<tr>
-                                            <td align="center" style="color: Red;" colspan="2">Your login attempt was not successful. Please try again.</td>
-                                        </tr>--%>
-                                        <tr>
-                                            <td align="right" colspan="2">
-                                                <button type="submit" id="btnLogin" disabled="disabled">Sign In</button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </form>
-                        </td>
-                    </tr>
-                </tbody></table>
+        <div class="loginContainer">
+            <form onsubmit=" javascript:asdasd(); ">
+                <div>
+                    <h2>Sign In</h2>
+                    <div>
+                        <label class="loginLabel" for="txtUsername">Email </label>
+                        <span>
+                            <input type="text" id="txtUsername" name="expenseTrackerLogin$UserName" />
+                            <span style="visibility: hidden;" title="User Name is required." id="expenseTrackerLogin_UserNameRequired">*</span>
+                        </span>
+                    </div>
+                    <div>
+                        <label class="loginLabel" for="txtPassword">Password </label>
+                        <span>
+                            <input type="password" id="txtPassword" name="expenseTrackerLogin$Password" />
+                            <span style="visibility: hidden;" title="Password is required." id="expenseTrackerLogin_PasswordRequired">*</span>
+                        </span>
+                    </div>
+                    <div>
+                        <button type="submit" id="btnLogin" disabled="disabled">Sign In</button>
+                    </div>
+                </div>
+            </form>
         </div>
         
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"> </script>
