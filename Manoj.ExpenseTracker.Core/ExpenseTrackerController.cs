@@ -13,7 +13,7 @@ namespace Manoj.ExpenseTracker.Core
     {
         private static Database expDb;
 
-        private static Database Db
+        internal static Database Db
         {
             get { return expDb ?? (expDb = DatabaseFactory.CreateDatabase("ExpenseTracker")); }
         }
@@ -85,7 +85,7 @@ namespace Manoj.ExpenseTracker.Core
             {
                 if (parameter.SqlDbType == SqlDbType.Structured)
                 {
-                    var typeNameParts = parameter.TypeName.Split(new Char[] { '.' });
+                    var typeNameParts = parameter.TypeName.Split('.');
                     if (typeNameParts.Length == 3)
                     {
                         parameter.TypeName = string.Format("{0}.{1}", typeNameParts[1], typeNameParts[2]);
@@ -127,11 +127,6 @@ namespace Manoj.ExpenseTracker.Core
         {
             Db.ExecuteNonQuery("Sp_DeleteTransac", transacId);
             return true;
-        }
-
-        public static int ValidateUser(string username, string password)
-        {
-            return Convert.ToInt32(Db.ExecuteScalar("Sp_ValidateUser", username, password));
         }
 
         public static string GetUserName(int userId)

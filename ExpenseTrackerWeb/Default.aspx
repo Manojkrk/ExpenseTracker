@@ -30,11 +30,16 @@
         <!-- This code is taken from http://twitter.github.com/bootstrap/examples/hero.html -->
 
         <form id="form1" runat="server">
-            <div>
-                <table cellspacing="0" cellpadding="1" style="border-collapse: collapse;" id="expenseTrackerLogin">
-                    <tbody>
-                        <tr>
-                            <td>
+            <asp:HiddenField runat="server" ID="hfUserName" />
+            <asp:HiddenField runat="server" ID="hfPassword" />
+            <asp:Button ID="btnPostback" style="display: none" runat="server" OnClick="btnPostback_Click"/>
+        </form>
+        <div>
+            <table cellspacing="0" cellpadding="1" style="border-collapse: collapse;" id="expenseTrackerLogin">
+                <tbody>
+                    <tr>
+                        <td>
+                            <form onsubmit=" javascript:asdasd(); ">
                                 <table cellpadding="0">
                                     <tbody>
                                         <tr>
@@ -63,16 +68,16 @@
                                         </tr>--%>
                                         <tr>
                                             <td align="right" colspan="2">
-                                                <button type="submit" id="btnLogin" name="expenseTrackerLogin$LoginButton" class="ui-button ui-widget ui-state-default ui-corner-all" role="button" aria-disabled="false">Sign In</button>
+                                                <button type="submit" id="btnLogin" disabled="disabled">Sign In</button>
                                             </td>
                                         </tr>
-                                    </tbody></table>
-                            </td>
-                        </tr>
-                    </tbody></table>
-                <asp:HiddenField runat="server" ID="hfKey"/>
-            </div>
-        </form>
+                                    </tbody>
+                                </table>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody></table>
+        </div>
         
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"> </script>
         <script>
@@ -86,10 +91,11 @@
         <script>
             window.jQuery.ui || document.write('<script src="scripts/vendor/jquery-ui-1.10.1.custom.min.js"><\/script>')
         </script>
-        <%--<script src="scripts/vendor/jsbn.js"> </script>
-        <script src="scripts/vendor/rng.js"> </script>
-        <script src="scripts/vendor/rsa.js"> </script>--%>
-        <script src="scripts/vendor/RSA.min.js"></script>
+        <script src="scripts/vendor/RSA.min.js"> </script>
+        <script>
+            var param = <%= GetPublicKey() %>;
+
+        </script>
         <script src="scripts/login.js"> </script>
     </body>
 </html>

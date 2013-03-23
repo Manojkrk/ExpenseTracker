@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExpenseTrackerController.cs" />
+    <Compile Include="LoginController.cs" />
     <Compile Include="Models\Balance.cs" />
     <Compile Include="Models\Balances.cs" />
     <Compile Include="Models\Person.cs" />
