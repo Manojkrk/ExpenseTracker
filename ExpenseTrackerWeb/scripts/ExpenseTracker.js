@@ -40,22 +40,78 @@ function ViewModel() {
         return this.transacs() === null;
     }, this);
     this.hideBalances = ko.computed(function() {
-        return typeof(this.balances().TotalBalance) === 'undefined';
+        return this.balances().TotalBalance === undefined;
     }, this);
-    this.selectedTransac = ko.observable({});
-    this.selectedTransacType = ko.computed(function() {
-        if (this.selectedTransac().Amount > 0) {
-            return 'input';
-        } else if (this.selectedTransac().Amount < 0) {
-            return 'expense';
-        } else {
-            return '';
+    this.selectedTransac = {
+        transac: ko.observable({}),
+        // Amount: ko.observable(),
+        type: ko.observable()
+    };
+    this.selectedTransac.Amount = ko.computed({
+        read: function() {
+            return isNaN(this.transac().Amount) ? '' : Math.abs(this.transac().Amount);
+        },
+        write: function(value) {
+            var transac = this.transac.peek();
+            if (isNaN(value)) {
+                transac.Amount = 0;
+            }
+            else if (this.type() === 'expense') {
+                transac.Amount = -Math.abs(value);
+            }
+            else {
+                transac.Amount = Math.abs(value);
+            }
+        },
+        owner: this.selectedTransac
+    });
+    this.selectedTransac.transac.subscribe(function(newValue) {
+        var newType = '';
+        if (newValue.Amount > 0) {
+            newType = 'input';
         }
-    }, this);
+        else if (newValue.Amount < 0) {
+            newType = 'expense';
+        }
+        vm.selectedTransac.type(newType);
+    });
+    this.selectedTransac.type.subscribe(function(newValue) {
+        var transac = vm.selectedTransac.transac();
+        if (newValue === 'expense') {
+            transac.Amount = -Math.abs(transac.Amount);
+        }
+        else {
+            transac.Amount = Math.abs(transac.Amount);
+        }
+    });
+    //this.selectedTransac.type = ko.computed({
+    //    read: function() {
+    //        if (this.transac().Amount > 0) {
+    //            return 'input';
+    //        }
+    //        else if (this.transac().Amount < 0) {
+    //            return 'expense';
+    //        }
+    //        else {
+    //            return '';
+    //        }
+    //    },
+    //    write: function(value) {
+    //        var transac = this.transac();
+    //        if (value === 'expense') {
+    //            transac.Amount = -Math.abs(transac.Amount);
+    //        }
+    //        else {
+    //            transac.Amount = Math.abs(transac.Amount);
+    //        }
+    //        this.newType = value;
+    //    },
+    //    owner: this.selectedTransac
+    //});
 }
 
 ViewModel.prototype.openNewTransacDialog = function() {
-    vm.selectedTransac({});
+    vm.selectedTransac.transac({});
     editTransacChanged = false;
     m.editTransac.dialog
         .dialog('option', 'title', 'New Transaction')
@@ -98,12 +154,23 @@ ViewModel.prototype.refreshBalances = function() {
     });
 };
 
+ViewModel.prototype.getSortFunction = function(expression) {
+    return function(a, b) {
+        if (expression) {
+            return a[expression] == b[expression] ? 0 : a[expression] > b[expression] ? 1 : -1;
+        }
+        else {
+            return a == b ? 0 : a > b ? 1 : -1;
+        }
+    };
+};
+
 
 ViewModel.prototype.openEditTransac = function(transac, e) {
     if ($(e.target).is('exp-deleteIcon') || $(e.target).closest('.exp-deleteIcon').is('*')) {
         return;
     }
-    vm.selectedTransac($.extend(true, {}, transac));
+    vm.selectedTransac.transac($.extend(true, {}, transac));
 
     editTransacChanged = false;
     m.editTransac.dialog.dialog('option', 'title', 'Edit Transaction')
@@ -137,9 +204,10 @@ ViewModel.prototype.insertTransac = function(transac) {
             transac: msTransac
         }),
         success: function(result) {
-            if (result == 0) {
+            if (result === 0) {
                 alert('error occured on save. Please try again');
-            } else {
+            }
+            else {
                 $('#tmplTransac').tmpl(transac).prependTo('#tbodyTransac');
             }
             vm.refreshBalances();
@@ -159,7 +227,8 @@ JSON.toMsFormat = function(obj) {
             var propVal = obj[propName];
             if (propVal instanceof Date) {
                 obj[propName] = propVal.toMsJson();
-            } else if (propVal instanceof Object) {
+            }
+            else if (propVal instanceof Object) {
                 json.toMsFormat(propVal);
             }
         }
@@ -169,7 +238,8 @@ JSON.toMsFormat = function(obj) {
 $.convertJsonDate = function(str) {
     if ($.type(str) === 'string' && /\/Date\(\d+[+-]\d+\)\//i.test(str)) {
         return new Date(parseInt(str.substring(6)));
-    } else {
+    }
+    else {
         return null;
     }
 };
@@ -186,9 +256,11 @@ ko.bindingHandlers.jqchecked = {
             var valueToWrite;
             if (element.type == "checkbox") {
                 valueToWrite = element.checked;
-            } else if ((element.type == "radio") && (element.checked)) {
+            }
+            else if ((element.type == "radio") && (element.checked)) {
                 valueToWrite = element.value;
-            } else {
+            }
+            else {
                 return; // "checked" binding only responds to checkboxes and selected radio buttons
             }
 
@@ -200,14 +272,16 @@ ko.bindingHandlers.jqchecked = {
                 var existingEntryIndex = modelValueUnwrapped.lenientIndexOf(element.value);
                 if (element.checked && (existingEntryIndex < 0)) modelValue.push(parseInt(element.value));
                 else if ((!element.checked) && (existingEntryIndex >= 0)) modelValue.splice(existingEntryIndex, 1);
-            } else if (ko.isObservable(modelValue)) {
+            }
+            else if (ko.isObservable(modelValue)) {
                 if (ko.isWriteableObservable(modelValue) && modelValue.peek() !== valueToWrite) { // Suppress repeated events when there's nothing new to notify (some browsers raise them)
                     modelValue(valueToWrite);
                 }
-            } else {
+            }
+            else {
                 var allBindings = allBindingsAccessor();
-                if (allBindings['_ko_property_writers'] && allBindings['_ko_property_writers']['checked']) {
-                    allBindings['_ko_property_writers']['checked'](valueToWrite);
+                if (allBindings['_ko_property_writers'] && allBindings['_ko_property_writers']['jqchecked']) {
+                    allBindings['_ko_property_writers']['jqchecked'](valueToWrite);
                 }
             }
         };
@@ -226,13 +300,15 @@ ko.bindingHandlers.jqchecked = {
             if (value instanceof Array) {
                 // When bound to an array, the checkbox being checked represents its value being present in that array
                 $(element).prop('checked', value.lenientIndexOf(element.value) >= 0);
-            } else {
+            }
+            else {
                 // When bound to anything other value (not an array), the checkbox being checked represents the value being trueish
                 $(element).prop('checked', typeof value !== "undefined" ? value : false);
             }
 
             $(element).filter('.ui-button').button('refresh');
-        } else if (element.type == "radio") {
+        }
+        else if (element.type == "radio") {
             element.checked = (element.value == value);
             /////////////// addded code to ko checked binding /////////////////
             $(element).button('refresh');
@@ -251,18 +327,19 @@ ko.bindingHandlers.datepicker = {
                 if (ko.isWriteableObservable(modelValue) && modelValue.peek() !== valueToWrite) { // Suppress repeated events when there's nothing new to notify (some browsers raise them)
                     modelValue(valueToWrite);
                 }
-            } else { //non-observable
+            }
+            else { //non-observable
                 allBindingsAccessor()._ko_property_writers.datepicker(valueToWrite);
             }
         });
     },
-    update: function(element, valueAccessor, allBindingsAccessor) {
+    update: function(element, valueAccessor) {
         // First get the latest data that we're bound to
-        var value = valueAccessor(), allBindings = allBindingsAccessor();
+        var value = valueAccessor();
 
         // Next, whether or not the supplied model property is observable, get its current value
         var valueUnwrapped = ko.utils.unwrapObservable(value);
-        $(element).datepicker('setDate', value);
+        $(element).datepicker('setDate', valueUnwrapped);
     }
 };
 
@@ -299,15 +376,6 @@ function initDashboard() {
     });
 }
 
-function cancelEditTransac(parameters) {
-    if (editTransacChanged) {
-        if (!confirm('Are you sure you want to Cancel? Changes made will be discarded.')) {
-            return;
-        }
-    }
-    m.editTransac.dialog.dialog('close');
-}
-
 function initEditTransac() {
     m.editTransac.typeButtonset.buttonset();
     if (!Modernizr.inputtypes.date) {
@@ -322,6 +390,9 @@ function initEditTransac() {
             modal: true,
             resizable: false,
             width: 640,
+            beforeClose: function() {
+                return !editTransacChanged || confirm('Are you sure you want to Cancel? Changes made will be discarded.');
+            },
             buttons: [
                 {
                     text: "Save",
@@ -331,7 +402,8 @@ function initEditTransac() {
                             if (currentRow == null) {
                                 editedTransac.Id = 0;
                                 insertTransac(editedTransac);
-                            } else {
+                            }
+                            else {
                                 var data = currentRow.tmplItem().data;
                                 $.extend(data, editedTransac);
                                 updateTransac(data);
@@ -340,24 +412,21 @@ function initEditTransac() {
                             }
                             editTransacChanged = false;
                             m.editTransac.dialog.dialog('close');
-                        } else {
+                        }
+                        else {
                             alert('incorrect data please try again');
                         }
                     }
                 },
                 {
                     text: "Cancel",
-                    click: cancelEditTransac
+                    click: function() {
+                        m.editTransac.dialog.dialog('close');
+                    }
                 }
             ]
         })
-        .removeClass('hidden');
-    m.editTransac.dialog
-        .closest('.ui-dialog')
-        .find('.ui-dialog-titlebar-close')
-        .unbind()
-        .click(cancelEditTransac);
-    m.editTransac.dialog
+        .removeClass('hidden')
         .find('input')
         .on('change, keypress', function() {
             editTransacChanged = true;
@@ -379,7 +448,8 @@ function getEditedTransac() {
         //if expense is selected invert the amount
         if ($('#etrTypeExpense').is(':checked')) {
             transac.Amount = -transac.Amount;
-        } else if (!$('#etrTypeInput').is(':checked')) {
+        }
+        else if (!$('#etrTypeInput').is(':checked')) {
             // if both are unchecked return null
             return null;
         }
