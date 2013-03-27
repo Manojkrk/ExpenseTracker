@@ -93,7 +93,6 @@
     <Content Include="scripts\login.js" />
     <Content Include="scripts\vendor\jquery-ui-1.10.1.custom.js" />
     <Content Include="scripts\vendor\jquery-ui-1.10.1.custom.min.js" />
-    <Content Include="scripts\vendor\jsbn.js" />
     <Content Include="scripts\vendor\knockout-2.2.1.js" />
     <Content Include="scripts\vendor\plugins.js" />
     <Content Include="scripts\vendor\bootstrap.js" />
@@ -103,8 +102,6 @@
     <Content Include="scripts\vendor\modernizr-2.6.2-respond-1.1.0.min.js" />
     <Content Include="scripts\ExpenseTracker.js" />
     <Content Include="scripts\vendor\jquery.tmpl.min.js" />
-    <Content Include="scripts\vendor\rng.js" />
-    <Content Include="scripts\vendor\rsa.js" />
     <Content Include="scripts\vendor\RSA.min.js" />
     <Content Include="styles\common.css" />
     <Content Include="styles\expensesUI\images\animated-overlay.gif" />

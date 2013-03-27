@@ -1,4 +1,5 @@
-﻿var persons = null;
+﻿'use strict';
+var persons = null;
 var currentRow = null;
 var editTransacChanged = false;
 var m = {
@@ -258,8 +259,12 @@ ko.bindingHandlers.jqchecked = {
                 // For checkboxes bound to an array, we add/remove the checkbox value to that array
                 // This works for both observable and non-observable arrays
                 var existingEntryIndex = modelValueUnwrapped.lenientIndexOf(element.value);
-                if (element.checked && (existingEntryIndex < 0)) modelValue.push(parseInt(element.value));
-                else if ((!element.checked) && (existingEntryIndex >= 0)) modelValue.splice(existingEntryIndex, 1);
+                if (element.checked && (existingEntryIndex < 0)) {
+                    modelValue.push(parseInt(element.value, 10));
+                }
+                else if ((!element.checked) && (existingEntryIndex >= 0)) {
+                    modelValue.splice(existingEntryIndex, 1);
+                }
             }
             else if (ko.isObservable(modelValue)) {
                 if (ko.isWriteableObservable(modelValue) && modelValue.peek() !== valueToWrite) { // Suppress repeated events when there's nothing new to notify (some browsers raise them)
@@ -268,41 +273,44 @@ ko.bindingHandlers.jqchecked = {
             }
             else {
                 var allBindings = allBindingsAccessor();
-                if (allBindings['_ko_property_writers'] && allBindings['_ko_property_writers']['jqchecked']) {
-                    allBindings['_ko_property_writers']['jqchecked'](valueToWrite);
+                if (allBindings._ko_property_writers && allBindings._ko_property_writers.jqchecked) {
+                    allBindings._ko_property_writers.jqchecked(valueToWrite);
                 }
             }
         };
         ko.utils.registerEventHandler(element, "click", updateHandler);
 
         // IE 6 won't allow radio buttons to be selected unless they have a name
-        if ((element.type == "radio") && !element.name)
-            ko.bindingHandlers['uniqueName']['init'](element, function() {
+        if ((element.type === "radio") && !element.name) {
+            ko.bindingHandlers.uniqueName.init(element, function() {
                 return true;
             });
+        }
     },
 
     'update': function(element, valueAccessor) {
         var value = ko.utils.unwrapObservable(valueAccessor());
-        if (element.type == "checkbox") {
+        if (element.type === "checkbox") {
             if (value instanceof Array) {
                 // When bound to an array, the checkbox being checked represents its value being present in that array
                 $(element).prop('checked', value.lenientIndexOf(element.value) >= 0);
             }
             else {
                 // When bound to anything other value (not an array), the checkbox being checked represents the value being trueish
-                $(element).prop('checked', typeof value !== "undefined" ? value : false);
+                $(element).prop('checked', !!value);
             }
 
             $(element).filter('.ui-button').button('refresh');
         }
-        else if (element.type == "radio") {
-            element.checked = (element.value == value);
+        else if (element.type === "radio") {
+            element.checked = (element.value === value);
             /////////////// addded code to ko checked binding /////////////////
             $(element).button('refresh');
             /////////////// end add ///////////////////////////
             // Workaround for IE 6/7 issue - it fails to apply checked state to dynamically-created radio buttons if you merely say "element.checked = true"
-            if ((element.value == value) && (ko.utils.isIe6 || ko.utils.isIe7)) element.mergeAttributes(document.createElement("<input type='radio' checked='checked' />"), false);
+            if ((element.value === value) && (ko.utils.isIe6 || ko.utils.isIe7)) {
+                element.mergeAttributes(document.createElement("<input type='radio' checked='checked' />"), false);
+            }
         }
     }
 };
@@ -342,7 +350,7 @@ ko.bindingHandlers.sort = {
             
             var sortFunction = getSortFunction(propertyUnwrapped, modifier);
 
-            ko.bindingHandlers['click']['init'](element, function () {
+            ko.bindingHandlers.click.init(element, function () {
                 if(valueUnwrapped.list()) {
                     valueUnwrapped.list.sort(sortFunction);
                 }
@@ -433,9 +441,9 @@ function initEditTransac() {
                     click: function() {
                         var editedTransac = getEditedTransac();
                         if (editedTransac != null) {
-                            if (currentRow == null) {
+                            if (currentRow === null) {
                                 editedTransac.Id = 0;
-                                insertTransac(editedTransac);
+                                vm.insertTransac(editedTransac);
                             }
                             else {
                                 var data = currentRow.tmplItem().data;
@@ -489,7 +497,7 @@ function getEditedTransac() {
         }
         $('#etrPersons').find('input').each(function() {
             if (this.checked) {
-                transac.PersonIds.push(parseInt(this.value));
+                transac.PersonIds.push(parseInt(this.value, 10));
             }
         });
     } catch(ex) {
@@ -514,24 +522,6 @@ function updateTransac(transac) {
             vm.refreshBalances();
         }
     });
-}
-
-// event to fire default button
-
-function WebForm_FireDefaultButton(event, target) {
-    if (event.keyCode == 13) {
-        var src = event.srcElement || event.target;
-        if (src &&
-            ((src.tagName.toLowerCase() == "input") &&
-                (src.type.toLowerCase() == "submit" || src.type.toLowerCase() == "button")) ||
-            ((src.tagName.toLowerCase() == "a") &&
-                (src.href != null) && (src.href != "")) ||
-            (src.tagName.toLowerCase() == "textarea")) {
-            return true;
-        }
-        $(target).trigger('click');
-    }
-    return true;
 }
 
 function getPersonNames(personIds) {
