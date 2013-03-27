@@ -1,6 +1,6 @@
 ﻿h1 { text-align: center; }
 
-.userInfo { }
+a:focus { outline: none; }
 
 .exp-unselectable {
     -khtml-user-select: none;
@@ -48,8 +48,6 @@
 
 .exp-deleteIcon:hover img { opacity: 0.8; }
 
-.exp-deleteIcon:focus { outline: none; }
-
 .exp-margin10, table { margin: 10px; }
 
 .exp-bold { font-weight: bold; }
@@ -73,20 +71,23 @@
 
 .table thead th { text-align: center; }
 
+.table thead th.ui-state-active {
+    border-bottom: 0;
+    border-right: 0;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
 #ddlProfile { margin-bottom: 0; }
 
 #btnManageProfile .ui-button-text { padding: 0.2em; }
 
 /* Login */
 
-.loginContainer {
-    padding: 50px;
-}
+.loginContainer { padding: 50px; }
 
-.loginLabel {
-    min-width: 100px;
-}
+.loginLabel { min-width: 100px; }
 
-#btnLogin {
-    margin-left: 240px;
-}
+#btnLogin { margin-left: 240px; }

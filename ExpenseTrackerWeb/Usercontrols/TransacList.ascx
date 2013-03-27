@@ -2,11 +2,21 @@
 <table id="tableTransac" class="table table-bordered table-striped table-hover hidden" data-bind="css: { hidden: hideTransacs }">
     <thead>
         <tr>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Description</th>
-            <th>Persons</th>
-            <th>Amount</th>
+            <th class="ui-tabs-active ui-state-active clickable" data-bind="sort: { list: transacs, property: 'Date', descendingFirst: true }">
+                <a href="javascript:void(0)">Date</a>
+            </th>
+            <th class="ui-tabs-active ui-state-active clickable" data-bind="sort: { list: transacs, property: 'Type' }">
+                <a href="javascript:void(0)">Type</a>
+            </th>
+            <th class="ui-tabs-active ui-state-active clickable" data-bind="sort: { list: transacs, property: 'Description' }">
+                <a href="javascript:void(0)">Description</a>
+            </th>
+            <th class="ui-tabs-active ui-state-active clickable" data-bind="sort: { list: transacs, property: 'Persons' }">
+                <a href="javascript:void(0)">Persons</a>
+            </th>
+            <th class="ui-tabs-active ui-state-active clickable" data-bind="sort: { list: transacs, property: 'Amount' }">
+                <a href="javascript:void(0)">Amount</a>
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -28,31 +38,3 @@
         </tr>
     </tbody>
 </table>
-<script id="tmplTransac" type="text/x-jQuery-tmpl">
-    <tr class="editable">
-        <td>
-            ${$.datepicker.formatDate('dd/mm/yy', Date)}
-        </td>
-        <td>
-            {{if Amount > 0}}
-            Input
-            {{else}}
-            Expense
-            {{/if}}
-        </td>
-        <td>
-            ${Description}
-        </td>
-        <td>
-            ${getPersonNames(PersonIds)}
-        </td>
-        <td class="exp-alignRight">
-            &#8377; ${Math.abs(Amount)}
-        </td>
-        <td>
-            <a class="exp-deleteIcon" href="javascript:void(0);">
-                <img src="/styles/images/delete.png" alt="Delete"/>
-            </a>
-        </td>
-    </tr>
-</script>

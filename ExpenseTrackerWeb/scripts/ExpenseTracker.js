@@ -154,18 +154,6 @@ ViewModel.prototype.refreshBalances = function() {
     });
 };
 
-ViewModel.prototype.getSortFunction = function(expression) {
-    return function(a, b) {
-        if (expression) {
-            return a[expression] == b[expression] ? 0 : a[expression] > b[expression] ? 1 : -1;
-        }
-        else {
-            return a == b ? 0 : a > b ? 1 : -1;
-        }
-    };
-};
-
-
 ViewModel.prototype.openEditTransac = function(transac, e) {
     if ($(e.target).is('exp-deleteIcon') || $(e.target).closest('.exp-deleteIcon').is('*')) {
         return;
@@ -237,7 +225,7 @@ JSON.toMsFormat = function(obj) {
 
 $.convertJsonDate = function(str) {
     if ($.type(str) === 'string' && /\/Date\(\d+[+-]\d+\)\//i.test(str)) {
-        return new Date(parseInt(str.substring(6)));
+        return new Date(parseInt(str.substring(6), 10));
     }
     else {
         return null;
@@ -254,10 +242,10 @@ ko.bindingHandlers.jqchecked = {
     'init': function(element, valueAccessor, allBindingsAccessor) {
         var updateHandler = function() {
             var valueToWrite;
-            if (element.type == "checkbox") {
+            if (element.type === "checkbox") {
                 valueToWrite = element.checked;
             }
-            else if ((element.type == "radio") && (element.checked)) {
+            else if ((element.type === "radio") && (element.checked)) {
                 valueToWrite = element.value;
             }
             else {
@@ -266,7 +254,7 @@ ko.bindingHandlers.jqchecked = {
 
             var modelValue = valueAccessor();
             var modelValueUnwrapped = ko.utils.unwrapObservable(modelValue);
-            if ((element.type == "checkbox") && (modelValueUnwrapped instanceof Array)) {
+            if ((element.type === "checkbox") && (modelValueUnwrapped instanceof Array)) {
                 // For checkboxes bound to an array, we add/remove the checkbox value to that array
                 // This works for both observable and non-observable arrays
                 var existingEntryIndex = modelValueUnwrapped.lenientIndexOf(element.value);
@@ -342,6 +330,52 @@ ko.bindingHandlers.datepicker = {
         $(element).datepicker('setDate', valueUnwrapped);
     }
 };
+
+ko.bindingHandlers.sort = {
+    init: function (element, valueAccessor) {
+        var modelValue = valueAccessor();
+        var valueUnwrapped = ko.utils.unwrapObservable(modelValue);
+        if (valueUnwrapped && valueUnwrapped.list && valueUnwrapped.property) {
+            var propertyUnwrapped = ko.utils.unwrapObservable(valueUnwrapped.property);
+            var isDescendingFirstUnwrapped = ko.utils.unwrapObservable(valueUnwrapped.descendingFirst);
+            var modifier = isDescendingFirstUnwrapped ? -1 : 1;
+            
+            var sortFunction = getSortFunction(propertyUnwrapped, modifier);
+
+            ko.bindingHandlers['click']['init'](element, function () {
+                if(valueUnwrapped.list()) {
+                    valueUnwrapped.list.sort(sortFunction);
+                }
+            });
+        }
+    }
+};
+
+function getSortFunction(expression, modifier) {
+
+    function getPropertyValue(a) {
+        switch (expression) {
+            case 'Type':
+                return (a.Amount > 0) - (a.Amount < 0);// todo: check the fiddle in other browsers
+            case 'Amount':
+                return (Math.abs(a.Amount));
+            case 'Persons':
+                return getPersonNames(a.PersonIds);
+            case undefined:
+            case null:
+                return a;
+            default:
+                return a[expression];
+        }
+    }
+
+    return function (a, b) {
+        modifier = -modifier;
+        var va = getPropertyValue(a);
+        var vb = getPropertyValue(b);
+        return va == vb ? 0 : va > vb ? -modifier : modifier;
+    };
+}
 
 // extending dialog to have default button
 
