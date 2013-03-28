@@ -3641,7 +3641,6 @@ input[type="submit"].btn.btn-mini {
     float: left;
     font-size: 20px;
     font-weight: 200;
-    margin-left: -20px;
     padding: 10px 20px 10px;
     text-shadow: 0 1px 0 #ffffff;
 }
@@ -3770,7 +3769,7 @@ input[type="submit"].btn.btn-mini {
 
 .navbar-static-top .container,
 .navbar-fixed-top .container,
-.navbar-fixed-bottom .container { width: 940px; }
+.navbar-fixed-bottom .container { padding: 0 60px; }
 
 .navbar-fixed-top { top: 0; }
 
@@ -5193,4 +5192,10 @@ a.badge:focus {
 
 .affix { position: fixed; }
 
-.chromeframe { }
+
+/* Added by Manoj */
+
+.dropdown-menu-separator {
+    border-top: 1px solid #D3D3D3;
+    margin: 5px 10px;
+}

@@ -2,6 +2,8 @@
 
 a:focus { outline: none; }
 
+body { padding: 60px 10px 40px; }
+
 .exp-unselectable {
     -khtml-user-select: none;
     -moz-user-select: -moz-none;
@@ -42,6 +44,8 @@ a:focus { outline: none; }
 
 .exp-floatLeft { float: left; }
 
+.exp-floatRight { float: right; }
+
 .exp-clearBoth { clear: both; }
 
 .exp-deleteIcon img { opacity: 0.5; }
@@ -76,9 +80,7 @@ a:focus { outline: none; }
     border-right: 0;
 }
 
-.clickable {
-    cursor: pointer;
-}
+.clickable { cursor: pointer; }
 
 #ddlProfile { margin-bottom: 0; }
 

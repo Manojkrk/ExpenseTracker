@@ -30,10 +30,11 @@ var vm = null;
 
 function ViewModel() {
     this.vm = this;
+    this.profiles = ko.observableArray([]);
+    this.currentProfile = ko.observable();
     this.persons = ko.observableArray([]);
     this.transacs = ko.observableArray(null);
     this.balances = ko.observable({});
-    this.currentProfileId = ko.observable();
     this.enableNewTransac = ko.computed(function() {
         return this.persons() !== null;
     }, this);
@@ -66,6 +67,15 @@ function ViewModel() {
         },
         owner: this.selectedTransac
     });
+    
+    // Subscriptions
+
+    this.currentProfile.subscribe(function() {
+        vm.refreshPersons();
+        vm.refreshTransacs();
+        vm.refreshBalances();
+    });
+
     this.selectedTransac.transac.subscribe(function(newValue) {
         var newType = '';
         if (newValue.Amount > 0) {
@@ -118,11 +128,17 @@ ViewModel.prototype.openNewTransacDialog = function() {
         .dialog('option', 'title', 'New Transaction')
         .dialog('open');
 };
+
+ViewModel.prototype.selectProfile = function(profile) {
+    vm.currentProfile(profile);
+};
+
 ViewModel.prototype.refreshPersons = function() {
     var self = this;
+    this.persons([]);
     $.ajax({
         url: 'ExpenseTrackerService.svc/GetPersons',
-        data: JSON.stringify({ profileId: self.currentProfileId() }),
+        data: JSON.stringify({ profileId: self.currentProfile().Id }),
         success: function(result) {
             persons = result;
             self.persons(result);
@@ -131,9 +147,10 @@ ViewModel.prototype.refreshPersons = function() {
 };
 ViewModel.prototype.refreshTransacs = function() {
     var self = this;
+    this.transacs();
     $.ajax({
         url: 'ExpenseTrackerService.svc/GetTransacs',
-        data: JSON.stringify({ profileId: self.currentProfileId() }),
+        data: JSON.stringify({ profileId: self.currentProfile().Id }),
         success: function(result) {
             result.forEach(function(transac) {
                 transac.Date = $.convertJsonDate(transac.Date);
@@ -146,9 +163,10 @@ ViewModel.prototype.refreshTransacs = function() {
 
 ViewModel.prototype.refreshBalances = function() {
     var self = this;
+    this.balances({});
     $.ajax({
         url: 'ExpenseTrackerService.svc/GetBalances',
-        data: JSON.stringify({ profileId: self.currentProfileId() }),
+        data: JSON.stringify({ profileId: self.currentProfile().Id }),
         success: function(result) {
             self.balances(result);
         }
@@ -189,7 +207,7 @@ ViewModel.prototype.insertTransac = function(transac) {
     $.ajax({
         url: 'ExpenseTrackerService.svc/InsertTransac',
         data: JSON.stringify({
-            profileId: self.currentProfileId(),
+            profileId: self.currentProfile().Id,
             transac: msTransac
         }),
         success: function(result) {
@@ -364,7 +382,7 @@ function getSortFunction(expression, modifier) {
     function getPropertyValue(a) {
         switch (expression) {
             case 'Type':
-                return (a.Amount > 0) - (a.Amount < 0);// todo: check the fiddle in other browsers
+                return (a.Amount > 0) - (a.Amount < 0);
             case 'Amount':
                 return (Math.abs(a.Amount));
             case 'Persons':
@@ -401,10 +419,9 @@ function startup() {
     initEditTransac();
     initDashboard();
     vm = new ViewModel();
+    vm.profiles(profiles);
+    vm.currentProfile(vm.profiles()[0]);
     ko.applyBindings(vm);
-    vm.refreshPersons();
-    vm.refreshTransacs();
-    vm.refreshBalances();
 }
 
 function initDashboard() {

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Globalization;
-using System.Web;
-using System.Web.UI.WebControls;
+using System.Web.Script.Serialization;
 using Manoj.ExpenseTracker.Core;
 
 namespace Manoj.ExpenseTracker.Web
@@ -19,19 +17,22 @@ namespace Manoj.ExpenseTracker.Web
             {
                 lblUserName.Text = "Admin";
             }
-            var profiles = ExpenseTrackerController.GetProfiles(SessionHelper.UserId);
-            ddlProfile.Items.Clear();
-            foreach (var profile in profiles)
-            {
-                ddlProfile.Items.Add(new ListItem(profile.Name, profile.Id.ToString(CultureInfo.InvariantCulture)));
-            }
-            ddlProfile.Items.Add(new ListItem("New Profile...", "-1"));
+
         }
 
         protected void lnkSignOut_Click(object sender, EventArgs e)
         {
             Session.Abandon();
             Response.Redirect("Default.aspx", true);
+        }
+
+        protected string Profiles
+        {
+            get
+            {
+                var profiles = ExpenseTrackerController.GetProfiles(SessionHelper.UserId);
+                return new JavaScriptSerializer().Serialize(profiles);
+            }
         }
     }
 }

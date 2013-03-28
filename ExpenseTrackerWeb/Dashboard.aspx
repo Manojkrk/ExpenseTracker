@@ -12,11 +12,6 @@
         <meta name="viewport" content="width=device-width" />
 
         <style>
-            body {
-                padding-bottom: 40px;
-                padding-top: 60px;
-            }
-
             .hidden, .dialog { display: none; }
         </style>
         <link rel="stylesheet" href="initializr/css/bootstrap-responsive.css" />
@@ -33,29 +28,60 @@
         <!-- This code is taken from http://twitter.github.com/bootstrap/examples/hero.html -->
 
         <form id="form1" runat="server">
+            <div class="navbar navbar-fixed-top">
+                <div class="navbar-inner">
+                    <div class="container">
+                        <ul class="nav">
+                            <li class="active">
+                                <a class="brand" href="Dashboard.aspx">Expenses</a>
+                            </li>
+                            <li><a href="javascript:void(0)" data-bind="click: openNewTransacDialog, enable: enableNewTransac">New Transaction</a></li>
+                        </ul>
+                        <ul class="nav">
+                            <li class="dropdown">
+                                <a href="#"
+                                   class="dropdown-toggle"
+                                   data-toggle="dropdown">
+                                    <span data-bind="text: currentProfile().Name"></span>
+                                    <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="javascript:void(0)">Manage</a></li>
+                                    <li><div class="dropdown-menu-separator" data-bind="visible: profiles().length > 1"></div></li>
+                                    <!-- ko foreach: profiles -->
+                                    <li><a href="javascript:void(0)" data-bind="text: Name, visible: $data !== $root.currentProfile(), click: $root.selectProfile"></a></li>
+                                    <!-- /ko -->
+                                    <li><div class="dropdown-menu-separator"></div></li>
+                                    <li><a href="javascript:void(0)">New&hellip;</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <ul class="nav pull-right">
+                            <li class="dropdown">
+                                <a href="#"
+                                   class="dropdown-toggle"
+                                   data-toggle="dropdown">
+                                    Welcome
+                                    <asp:Label ID="lblUserName" runat="server"></asp:Label>
+                                    <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <asp:LinkButton id="lnkSignOut" runat="server" OnClick="lnkSignOut_Click">Sign off</asp:LinkButton>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
             <div class="exp-PageWidth">
                 <div>
-                    <h1>Expense Tracker</h1>
-                </div>
-                <div>
-                    <div class="exp-fullWidth">
-                        <div class="exp-alignRight">
-                            <label class="exp-inline">Welcome </label>
-                            <asp:Label ID="lblUserName" runat="server"></asp:Label>
-                            <asp:LinkButton id="lnkSignOut" runat="server" OnClick="lnkSignOut_Click">Sign off</asp:LinkButton>
-                        </div>
-                    </div>
-                    <div class="exp-fullWidth">
-                        <div class="exp-alignRight">
-                            <asp:DropDownList runat="server" ID="ddlProfile" data-bind="value: currentProfileId"/>
-                            <button id="btnManageProfile">Manage Profile</button>
-                        </div>
-                    </div>
                     <div class="exp-balanceSection">
                         <exp:BalanceList ID="BalanceList1" runat="server" />
                     </div>
                     <div class="exp-mainContent">
-                        <button id="btnNewTransac" type="button" data-bind="click: openNewTransacDialog, enable: enableNewTransac">New Transaction</button>
                         <exp:TransacList ID="TransacList1" runat="server" />
                     </div>
                 </div>
@@ -76,6 +102,10 @@
             window.jQuery.ui || document.write('<script src="scripts/vendor/jquery-ui-1.10.1.custom.js"><\/script>')
         </script>
         <script src="scripts/vendor/knockout-2.2.1.js"> </script>
+        
+        <script>
+            var profiles = <%= Profiles %>;
+        </script>
         
         <script src="scripts/ExpenseTracker.js"> </script>
     </body>
