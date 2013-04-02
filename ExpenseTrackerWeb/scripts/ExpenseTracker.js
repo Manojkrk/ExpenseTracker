@@ -67,7 +67,7 @@ function ViewModel() {
         },
         owner: this.selectedTransac
     });
-    
+
     // Subscriptions
 
     this.currentProfile.subscribe(function() {
@@ -358,50 +358,55 @@ ko.bindingHandlers.datepicker = {
 };
 
 ko.bindingHandlers.sort = {
-    init: function (element, valueAccessor) {
+    init: function(element, valueAccessor) {
         var modelValue = valueAccessor();
         var valueUnwrapped = ko.utils.unwrapObservable(modelValue);
         if (valueUnwrapped && valueUnwrapped.list && valueUnwrapped.property) {
             var propertyUnwrapped = ko.utils.unwrapObservable(valueUnwrapped.property);
             var isDescendingFirstUnwrapped = ko.utils.unwrapObservable(valueUnwrapped.descendingFirst);
             var modifier = isDescendingFirstUnwrapped ? -1 : 1;
-            
-            var sortFunction = getSortFunction(propertyUnwrapped, modifier);
 
-            ko.bindingHandlers.click.init(element, function () {
-                if(valueUnwrapped.list()) {
+            var sortFunction = (function() {
+
+                function getPropertyValue(a) {
+                    switch (propertyUnwrapped) {
+                    case 'Type':
+                        return (a.Amount > 0) - (a.Amount < 0);
+                    case 'Amount':
+                        return (Math.abs(a.Amount));
+                    case 'Persons':
+                        return getPersonNames(a.PersonIds);
+                    case undefined:
+                    case null:
+                        return a;
+                    default:
+                        return a[propertyUnwrapped];
+                    }
+                }
+
+                return function(a, b) {
+                    var va = getPropertyValue(a);
+                    var vb = getPropertyValue(b);
+                    return va == vb ? 0 : va > vb ? -modifier : modifier;
+                };
+            })();
+
+
+            $(element).click(function() {
+                modifier = -modifier;
+                if (valueUnwrapped.list()) {
                     valueUnwrapped.list.sort(sortFunction);
+                }
+                if (modifier > 0) {
+                    $(this).removeClass('sortAsc').addClass('sortDesc');
+                }
+                else {
+                    $(this).removeClass('sortDesc').addClass('sortAsc');
                 }
             });
         }
     }
 };
-
-function getSortFunction(expression, modifier) {
-
-    function getPropertyValue(a) {
-        switch (expression) {
-            case 'Type':
-                return (a.Amount > 0) - (a.Amount < 0);
-            case 'Amount':
-                return (Math.abs(a.Amount));
-            case 'Persons':
-                return getPersonNames(a.PersonIds);
-            case undefined:
-            case null:
-                return a;
-            default:
-                return a[expression];
-        }
-    }
-
-    return function (a, b) {
-        modifier = -modifier;
-        var va = getPropertyValue(a);
-        var vb = getPropertyValue(b);
-        return va == vb ? 0 : va > vb ? -modifier : modifier;
-    };
-}
 
 // extending dialog to have default button
 

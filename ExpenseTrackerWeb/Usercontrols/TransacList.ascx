@@ -3,19 +3,19 @@
     <thead>
         <tr>
             <th class="ui-tabs-active ui-state-active clickable" data-bind="sort: { list: transacs, property: 'Date', descendingFirst: true }">
-                <a href="javascript:void(0)">Date</a>
+                <a href="javascript:void(0)">Date<div class="sortIcon ui-icon"></div></a>
             </th>
             <th class="ui-tabs-active ui-state-active clickable" data-bind="sort: { list: transacs, property: 'Type' }">
-                <a href="javascript:void(0)">Type</a>
+                <a href="javascript:void(0)">Type<div class="sortIcon ui-icon"></div></a>
             </th>
             <th class="ui-tabs-active ui-state-active clickable" data-bind="sort: { list: transacs, property: 'Description' }">
-                <a href="javascript:void(0)">Description</a>
+                <a href="javascript:void(0)">Description<div class="sortIcon ui-icon"></div></a>
             </th>
             <th class="ui-tabs-active ui-state-active clickable" data-bind="sort: { list: transacs, property: 'Persons' }">
-                <a href="javascript:void(0)">Persons</a>
+                <a href="javascript:void(0)">Persons<div class="sortIcon ui-icon"></div></a>
             </th>
             <th class="ui-tabs-active ui-state-active clickable" data-bind="sort: { list: transacs, property: 'Amount' }">
-                <a href="javascript:void(0)">Amount</a>
+                <a href="javascript:void(0)">Amount<div class="sortIcon ui-icon"></div></a>
             </th>
             <th></th>
         </tr>
