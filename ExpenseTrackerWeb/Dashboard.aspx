@@ -46,7 +46,7 @@
                                     <b class="caret"></b>
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="javascript:void(0)">Manage</a></li>
+                                    <li><a href="javascript:void(0)">Manage&hellip;</a></li>
                                     <li><div class="dropdown-menu-separator" data-bind="visible: profiles().length > 1"></div></li>
                                     <!-- ko foreach: profiles -->
                                     <li><a href="javascript:void(0)" data-bind="text: Name, visible: $data !== $root.currentProfile(), click: $root.selectProfile"></a></li>

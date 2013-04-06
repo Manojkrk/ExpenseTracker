@@ -23,12 +23,12 @@
     <tbody id="tbodyTransac" data-bind="foreach: transacs">
         <tr class="editable" data-bind="click: $root.openEditTransac">
             <td data-bind="text: $.datepicker.formatDate('dd/mm/yy', Date)"></td>
-            <td data-bind="text: (Amount > 0) ? 'Input' : 'Expense'"></td>
+            <td data-bind="text: Type"></td>
             <td data-bind="text: Description"></td>
-            <td data-bind="text: getPersonNames(PersonIds)"></td>
+            <td data-bind="text: names()"></td>
             <td class="exp-alignRight">
                 &#8377;
-                <!-- ko text: Math.abs(Amount) --><!-- /ko -->
+                <!-- ko text: Amount --><!-- /ko -->
             </td>
             <td>
                 <a class="exp-deleteIcon" href="javascript:void(0);" data-bind="click: $root.deleteTransac">

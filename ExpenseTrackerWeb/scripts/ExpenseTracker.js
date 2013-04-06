@@ -35,6 +35,8 @@ function ViewModel() {
     this.persons = ko.observableArray([]);
     this.transacs = ko.observableArray(null);
     this.balances = ko.observable({});
+    this.selectedTransac = ko.observable(new Transac());
+
     this.enableNewTransac = ko.computed(function() {
         return this.persons() !== null;
     }, this);
@@ -44,29 +46,6 @@ function ViewModel() {
     this.hideBalances = ko.computed(function() {
         return this.balances().TotalBalance === undefined;
     }, this);
-    this.selectedTransac = {
-        transac: ko.observable({}),
-        // Amount: ko.observable(),
-        type: ko.observable()
-    };
-    this.selectedTransac.Amount = ko.computed({
-        read: function() {
-            return isNaN(this.transac().Amount) ? '' : Math.abs(this.transac().Amount);
-        },
-        write: function(value) {
-            var transac = this.transac.peek();
-            if (isNaN(value)) {
-                transac.Amount = 0;
-            }
-            else if (this.type() === 'expense') {
-                transac.Amount = -Math.abs(value);
-            }
-            else {
-                transac.Amount = Math.abs(value);
-            }
-        },
-        owner: this.selectedTransac
-    });
 
     // Subscriptions
 
@@ -75,54 +54,10 @@ function ViewModel() {
         vm.refreshTransacs();
         vm.refreshBalances();
     });
-
-    this.selectedTransac.transac.subscribe(function(newValue) {
-        var newType = '';
-        if (newValue.Amount > 0) {
-            newType = 'input';
-        }
-        else if (newValue.Amount < 0) {
-            newType = 'expense';
-        }
-        vm.selectedTransac.type(newType);
-    });
-    this.selectedTransac.type.subscribe(function(newValue) {
-        var transac = vm.selectedTransac.transac();
-        if (newValue === 'expense') {
-            transac.Amount = -Math.abs(transac.Amount);
-        }
-        else {
-            transac.Amount = Math.abs(transac.Amount);
-        }
-    });
-    //this.selectedTransac.type = ko.computed({
-    //    read: function() {
-    //        if (this.transac().Amount > 0) {
-    //            return 'input';
-    //        }
-    //        else if (this.transac().Amount < 0) {
-    //            return 'expense';
-    //        }
-    //        else {
-    //            return '';
-    //        }
-    //    },
-    //    write: function(value) {
-    //        var transac = this.transac();
-    //        if (value === 'expense') {
-    //            transac.Amount = -Math.abs(transac.Amount);
-    //        }
-    //        else {
-    //            transac.Amount = Math.abs(transac.Amount);
-    //        }
-    //        this.newType = value;
-    //    },
-    //    owner: this.selectedTransac
-    //});
 }
 
 ViewModel.prototype.openNewTransacDialog = function() {
-    vm.selectedTransac.transac({});
+    vm.selectedTransac(new Transac());
     editTransacChanged = false;
     m.editTransac.dialog
         .dialog('option', 'title', 'New Transaction')
@@ -147,16 +82,16 @@ ViewModel.prototype.refreshPersons = function() {
 };
 ViewModel.prototype.refreshTransacs = function() {
     var self = this;
-    this.transacs();
+    this.transacs(null);
     $.ajax({
         url: 'ExpenseTrackerService.svc/GetTransacs',
         data: JSON.stringify({ profileId: self.currentProfile().Id }),
         success: function(result) {
+            var transacs = [];
             result.forEach(function(transac) {
-                transac.Date = $.convertJsonDate(transac.Date);
-                transac.state = rowStatus.ready;
+                transacs.push(ko.observable(new Transac(transac)));
             });
-            self.transacs(result);
+            self.transacs(transacs);
         }
     });
 };
@@ -174,10 +109,10 @@ ViewModel.prototype.refreshBalances = function() {
 };
 
 ViewModel.prototype.openEditTransac = function(transac, e) {
-    if ($(e.target).is('exp-deleteIcon') || $(e.target).closest('.exp-deleteIcon').is('*')) {
+    if ($(e.target).is('.exp-deleteIcon') || $(e.target).closest('.exp-deleteIcon').length) {
         return;
     }
-    vm.selectedTransac.transac($.extend(true, {}, transac));
+    vm.selectedTransac(new Transac(transac));
 
     editTransacChanged = false;
     m.editTransac.dialog.dialog('option', 'title', 'Edit Transaction')
@@ -222,6 +157,86 @@ ViewModel.prototype.insertTransac = function(transac) {
     });
 };
 
+function Transac(data) {
+    var self = this;
+    if (data && typeof data === "object") {
+        if (data instanceof Transac) {
+            $.extend(this, data);
+            this.PersonIds = data.PersonIds.slice(0);
+        }
+        else {
+
+            for (var property in data) {
+                switch (property) {
+                case "Date":
+                    this.Date = $.convertJsonDate(data.Date);
+                    break;
+                case "PersonIds":
+                    if ($.isArray(data.PersonIds)) {
+                        this.PersonIds = [];
+                        data.PersonIds.forEach(function(personId) {
+                            self.PersonIds.push(personId.toString());
+                        });
+                    }
+                    else {
+                        this.PersonIds = data.PersonIds;
+                    }
+                    break;
+                case "Amount":
+                    if (data.Amount > 0) {
+                        this.Type = 'Input';
+                    }
+                    else if (data.Amount < 0) {
+                        this.Type = 'Expense';
+                    }
+                    else {
+                        this.Type = '';
+                    }
+
+                    this.Amount = isNaN(data.Amount) ? '' : Math.abs(data.Amount);
+                    break;
+                default:
+                    this[property] = data[property];
+                }
+            }
+        }
+    }
+    if (!this.state) {
+        this.state = rowStatus.ready;
+    }
+}
+
+$.extend(Transac.prototype, {
+    Id: 0,
+    Type: '',
+    Amount: '',
+    Description: '',
+    PersonIds: []
+});
+
+Transac.prototype.names = function() {
+    var personNames = '';
+    var persons = vm.persons();
+    for (var i = 0; i < persons.length; i++) {
+        for (var j = 0; j < this.PersonIds.length; j++) {
+            if (persons[i].Id == this.PersonIds[j]) {
+                personNames += ', ' + persons[i].Name;
+                break;
+            }
+        }
+    }
+    return personNames.substring(2);
+};
+
+Transac.prototype.isValid = function() {
+    return (this.Id && this.Id >= 0 &&
+        (this.Type === 'Input' || this.Type === 'Expense') &&
+        this.Amount > 0 &&
+        this.Description &&
+        this.PersonIds && this.PersonIds.length &&
+        this.Date && this.Date < new Date());
+};
+
 // Date date converters for json
 
 Date.prototype.toMsJson = function() {
@@ -261,30 +276,15 @@ ko.bindingHandlers.jqchecked = {
     'init': function(element, valueAccessor, allBindingsAccessor) {
         var updateHandler = function() {
             var valueToWrite;
-            if (element.type === "checkbox") {
-                valueToWrite = element.checked;
-            }
-            else if ((element.type === "radio") && (element.checked)) {
+            if ((element.type === "radio") && (element.checked)) {
                 valueToWrite = element.value;
             }
             else {
-                return; // "checked" binding only responds to checkboxes and selected radio buttons
+                return; // "checked" binding only responds to selected radio buttons
             }
 
             var modelValue = valueAccessor();
-            var modelValueUnwrapped = ko.utils.unwrapObservable(modelValue);
-            if ((element.type === "checkbox") && (modelValueUnwrapped instanceof Array)) {
-                // For checkboxes bound to an array, we add/remove the checkbox value to that array
-                // This works for both observable and non-observable arrays
-                var existingEntryIndex = modelValueUnwrapped.lenientIndexOf(element.value);
-                if (element.checked && (existingEntryIndex < 0)) {
-                    modelValue.push(parseInt(element.value, 10));
-                }
-                else if ((!element.checked) && (existingEntryIndex >= 0)) {
-                    modelValue.splice(existingEntryIndex, 1);
-                }
-            }
-            else if (ko.isObservable(modelValue)) {
+            if (ko.isObservable(modelValue)) {
                 if (ko.isWriteableObservable(modelValue) && modelValue.peek() !== valueToWrite) { // Suppress repeated events when there's nothing new to notify (some browsers raise them)
                     modelValue(valueToWrite);
                 }
@@ -308,21 +308,9 @@ ko.bindingHandlers.jqchecked = {
 
     'update': function(element, valueAccessor) {
         var value = ko.utils.unwrapObservable(valueAccessor());
-        if (element.type === "checkbox") {
-            if (value instanceof Array) {
-                // When bound to an array, the checkbox being checked represents its value being present in that array
-                $(element).prop('checked', value.lenientIndexOf(element.value) >= 0);
-            }
-            else {
-                // When bound to anything other value (not an array), the checkbox being checked represents the value being trueish
-                $(element).prop('checked', !!value);
-            }
-
-            $(element).filter('.ui-button').button('refresh');
-        }
-        else if (element.type === "radio") {
+        if (element.type === "radio") {
             element.checked = (element.value === value);
-            /////////////// addded code to ko checked binding /////////////////
+            /////////////// added code to ko checked binding /////////////////
             $(element).button('refresh');
             /////////////// end add ///////////////////////////
             // Workaround for IE 6/7 issue - it fails to apply checked state to dynamically-created radio buttons if you merely say "element.checked = true"
@@ -375,7 +363,7 @@ ko.bindingHandlers.sort = {
                     case 'Amount':
                         return (Math.abs(a.Amount));
                     case 'Persons':
-                        return getPersonNames(a.PersonIds);
+                        return a.names();
                     case undefined:
                     case null:
                         return a;
@@ -412,25 +400,7 @@ ko.bindingHandlers.sort = {
 
 //$.ui.dialog.fn._create
 
-
-$(document).ready(startup);
-
-function startup() {
-    $.ajaxSetup({
-        dataType: "json",
-        type: "POST",
-        contentType: "application/json; charset=utf-8"
-    });
-    initEditTransac();
-    initDashboard();
-    vm = new ViewModel();
-    vm.profiles(profiles);
-    vm.currentProfile(vm.profiles()[0]);
-    ko.applyBindings(vm);
-}
-
 function initDashboard() {
-    $('#btnNewTransac').button();
 
     $('#btnManageProfile').button({
         icons: {
@@ -461,18 +431,15 @@ function initEditTransac() {
                 {
                     text: "Save",
                     click: function() {
-                        var editedTransac = getEditedTransac();
+                        var editedTransac = vm.selectedTransac();
                         if (editedTransac != null) {
-                            if (currentRow === null) {
-                                editedTransac.Id = 0;
+                            if (!editedTransac.Id) {
+                                editedTransac.state = rowStatus.creating;
                                 vm.insertTransac(editedTransac);
                             }
                             else {
-                                var data = currentRow.tmplItem().data;
-                                $.extend(data, editedTransac);
-                                updateTransac(data);
-                                data.state = rowStatus.updating;
-                                currentRow.tmplItem().update();
+                                updateTransac(editedTransac);
+                                editedTransac.state = rowStatus.updating;
                             }
                             editTransacChanged = false;
                             m.editTransac.dialog.dialog('close');
@@ -491,41 +458,10 @@ function initEditTransac() {
             ]
         })
         .removeClass('hidden')
-        .find('input')
+        .find('Input')
         .on('change, keypress', function() {
             editTransacChanged = true;
         });
-}
-
-
-function getEditedTransac() {
-    var transac = {
-        PersonIds: []
-    };
-    try {
-        transac.Date = $.datepicker.parseDate('d-M-yy', m.editTransac.datepicker.val());
-        transac.Description = $('#txtTransacDescription').val();
-        transac.Amount = parseFloat($('#txtTransacAmount').val());
-        if (isNaN(transac.Amount)) {
-            return null;
-        }
-        //if expense is selected invert the amount
-        if ($('#etrTypeExpense').is(':checked')) {
-            transac.Amount = -transac.Amount;
-        }
-        else if (!$('#etrTypeInput').is(':checked')) {
-            // if both are unchecked return null
-            return null;
-        }
-        $('#etrPersons').find('input').each(function() {
-            if (this.checked) {
-                transac.PersonIds.push(parseInt(this.value, 10));
-            }
-        });
-    } catch(ex) {
-        return null;
-    }
-    return transac;
 }
 
 function updateTransac(transac) {
@@ -546,16 +482,18 @@ function updateTransac(transac) {
     });
 }
 
-function getPersonNames(personIds) {
-    var personNames = '';
-    var persons = vm.persons();
-    for (var i = 0; i < persons.length; i++) {
-        for (var j = 0; j < personIds.length; j++) {
-            if (persons[i].Id === personIds[j]) {
-                personNames += ', ' + persons[i].Name;
-                break;
-            }
-        }
-    }
-    return personNames.substring(2);
+function startup() {
+    $.ajaxSetup({
+        dataType: "json",
+        type: "POST",
+        contentType: "application/json; charset=utf-8"
+    });
+    initEditTransac();
+    initDashboard();
+    vm = new ViewModel();
+    vm.profiles(profiles);
+    vm.currentProfile(vm.profiles()[0]);
+    ko.applyBindings(vm);
 }
+
+$(document).ready(startup);

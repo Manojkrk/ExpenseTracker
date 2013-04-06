@@ -95,17 +95,13 @@ body { padding: 60px 10px 40px; }
 #btnLogin { margin-left: 240px; }
 
 .sortIcon.ui-icon {
-    background-position: -128px 0;
     background-image: url(expensesUI/images/ui-icons_847e71_256x240.png);
+    background-position: -128px 0;
     display: inline-block;
     position: relative;
     top: 3px;
 }
 
-.sortAsc .sortIcon {
-    background-position: 0 0;
-}
+.sortAsc .sortIcon { background-position: 0 0; }
 
-.sortDesc .sortIcon {
-    background-position: -64px 0;
-}
+.sortDesc .sortIcon { background-position: -64px 0; }
