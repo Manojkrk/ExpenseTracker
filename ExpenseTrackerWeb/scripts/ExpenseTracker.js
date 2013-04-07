@@ -137,8 +137,10 @@ ViewModel.prototype.deleteTransac = function(transac) {
 
 ViewModel.prototype.insertTransac = function(transac) {
     var self = this;
-    var msTransac = $.extend({}, transac);
-    msTransac.Date = transac.Date.toMsJson();
+    transac.state = rowStatus.creating;
+    var currentTransac = ko.observable(transac);
+    self.transacs.unshift(currentTransac);
+    var msTransac = getMsTransac(transac);
     $.ajax({
         url: 'ExpenseTrackerService.svc/InsertTransac',
         data: JSON.stringify({
@@ -149,27 +151,54 @@ ViewModel.prototype.insertTransac = function(transac) {
             if (result === 0) {
                 alert('error occured on save. Please try again');
             }
-            else {
-                $('#tmplTransac').tmpl(transac).prependTo('#tbodyTransac');
-            }
-            vm.refreshBalances();
+            self.refreshBalances();
         }
     });
 };
 
+ViewModel.prototype.updateTransac = function(transac) {
+    var self = this;
+    var currentTransac;
+    var transacs = this.transacs();
+    for (var index = 0, len = transacs.length; index < len; index++) {
+        currentTransac = transacs[index];
+        if (currentTransac.peek().Id === transac.Id) {
+            break;
+        }
+    }
+    if (currentTransac) {
+        transac.state = rowStatus.updating;
+        currentTransac(transac);
+        var msTransac = getMsTransac(transac);
+        $.ajax({
+            url: 'ExpenseTrackerService.svc/UpdateTransac',
+            dataType: "json",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({ transac: msTransac }),
+            success: function(result) {
+                if (result !== true) {
+                    alert('error occured on save. Please try again');
+                }
+                self.refreshBalances();
+            }
+        });
+    }
+};
+
 function Transac(data) {
     var self = this;
+    this.PersonIds = [];
     if (data && typeof data === "object") {
         if (data instanceof Transac) {
             $.extend(this, data);
             this.PersonIds = data.PersonIds.slice(0);
         }
         else {
-
             for (var property in data) {
                 switch (property) {
                 case "Date":
-                    this.Date = $.convertJsonDate(data.Date);
+                    this.Date = convertJsonDate(data.Date);
                     break;
                 case "PersonIds":
                     if ($.isArray(data.PersonIds)) {
@@ -201,6 +230,9 @@ function Transac(data) {
             }
         }
     }
+    else {
+        this.state = rowStatus.creating;
+    }
     if (!this.state) {
         this.state = rowStatus.ready;
     }
@@ -210,8 +242,7 @@ $.extend(Transac.prototype, {
     Id: 0,
     Type: '',
     Amount: '',
-    Description: '',
-    PersonIds: []
+    Description: ''
 });
 
 Transac.prototype.names = function() {
@@ -229,7 +260,7 @@ Transac.prototype.names = function() {
 };
 
 Transac.prototype.isValid = function() {
-    return (this.Id && this.Id >= 0 &&
+    return (this.Id >= 0 &&
         (this.Type === 'Input' || this.Type === 'Expense') &&
         this.Amount > 0 &&
         this.Description &&
@@ -255,19 +286,6 @@ JSON.toMsFormat = function(obj) {
             }
         }
     }
-};
-
-$.convertJsonDate = function(str) {
-    if ($.type(str) === 'string' && /\/Date\(\d+[+-]\d+\)\//i.test(str)) {
-        return new Date(parseInt(str.substring(6), 10));
-    }
-    else {
-        return null;
-    }
-};
-
-$.formatJsonDate = function(str) {
-    return $.datepicker.formatDate('dd/mm/yy', $.convertJsonDate(str));
 };
 
 // Knockout custom bindings
@@ -396,9 +414,26 @@ ko.bindingHandlers.sort = {
     }
 };
 
-// extending dialog to have default button
+function getMsTransac(transac) {
+    if (transac.isValid()) {
+        var msTransac = $.extend({}, transac);
+        msTransac.Date = transac.Date.toMsJson();
+        if (transac.Type === 'Expense') {
+            msTransac.Amount = -Math.abs(transac.Amount);
+        }
+        return msTransac;
+    }
+    throw 'Invalid Data';
+}
 
-//$.ui.dialog.fn._create
+function convertJsonDate(str) {
+    if ($.type(str) === 'string' && /\/Date\(\d+[+-]\d+\)\//i.test(str)) {
+        return new Date(parseInt(str.substring(6), 10));
+    }
+    else {
+        return null;
+    }
+}
 
 function initDashboard() {
 
@@ -432,14 +467,13 @@ function initEditTransac() {
                     text: "Save",
                     click: function() {
                         var editedTransac = vm.selectedTransac();
-                        if (editedTransac != null) {
+                        if (editedTransac.isValid()) {
                             if (!editedTransac.Id) {
                                 editedTransac.state = rowStatus.creating;
                                 vm.insertTransac(editedTransac);
                             }
                             else {
-                                updateTransac(editedTransac);
-                                editedTransac.state = rowStatus.updating;
+                                vm.updateTransac(editedTransac);
                             }
                             editTransacChanged = false;
                             m.editTransac.dialog.dialog('close');
@@ -462,24 +496,6 @@ function initEditTransac() {
         .on('change, keypress', function() {
             editTransacChanged = true;
         });
-}
-
-function updateTransac(transac) {
-    var msTransac = $.extend({}, transac);
-    msTransac.Date = transac.Date.toMsJson();
-    $.ajax({
-        url: 'ExpenseTrackerService.svc/UpdateTransac',
-        dataType: "json",
-        type: "POST",
-        contentType: "application/json; charset=utf-8",
-        data: JSON.stringify({ transac: msTransac }),
-        success: function(result) {
-            if (result !== true) {
-                alert('error occured on save. Please try again');
-            }
-            vm.refreshBalances();
-        }
-    });
 }
 
 function startup() {

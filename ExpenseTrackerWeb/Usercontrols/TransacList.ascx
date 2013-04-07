@@ -22,7 +22,7 @@
     </thead>
     <tbody id="tbodyTransac" data-bind="foreach: transacs">
         <tr class="editable" data-bind="click: $root.openEditTransac">
-            <td data-bind="text: $.datepicker.formatDate('dd/mm/yy', Date)"></td>
+            <td data-bind="text: $.datepicker.formatDate('dd-M-yy', Date)"></td>
             <td data-bind="text: Type"></td>
             <td data-bind="text: Description"></td>
             <td data-bind="text: names()"></td>
