@@ -27,6 +27,16 @@ namespace Manoj.ExpenseTracker.Core
             return profiles;
         }
 
+        public static int CreateProfile(string profileName)
+        {
+            var profileId = Convert.ToInt32(Db.ExecuteScalar("Sp_CreateProfile", profileName, SessionHelper.UserId));
+            if (profileId == 0)
+            {
+                throw new DataException("Unable to create Profile");
+            }
+            return profileId;
+        }
+
         public static List<Person> GetPersons(int profileId)
         {
             var dataSet = Db.ExecuteDataSet("Sp_GetPersons", profileId);

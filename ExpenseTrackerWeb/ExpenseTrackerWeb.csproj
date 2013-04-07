@@ -71,6 +71,7 @@
     <Content Include="error.html" />
     <Content Include="Dashboard.aspx" />
     <Content Include="Default.aspx" />
+    <Content Include="favicon.ico" />
     <Content Include="ExpenseTrackerService.svc" />
     <Content Include="initializr\404.html" />
     <Content Include="initializr\apple-touch-icon-114x114-precomposed.png" />
@@ -126,6 +127,7 @@
     <Content Include="Test.aspx" />
     <Content Include="Usercontrols\BalanceList.ascx" />
     <Content Include="Usercontrols\EditTransac.ascx" />
+    <Content Include="Usercontrols\InputBox.ascx" />
     <Content Include="Usercontrols\ManageProfile.ascx" />
     <Content Include="Usercontrols\TransacList.ascx" />
     <Content Include="Web.config">
@@ -178,6 +180,13 @@
     </Compile>
     <Compile Include="Usercontrols\EditTransac.ascx.designer.cs">
       <DependentUpon>EditTransac.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Usercontrols\InputBox.ascx.cs">
+      <DependentUpon>InputBox.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Usercontrols\InputBox.ascx.designer.cs">
+      <DependentUpon>InputBox.ascx</DependentUpon>
     </Compile>
     <Compile Include="Usercontrols\ManageProfile.ascx.cs">
       <DependentUpon>ManageProfile.ascx</DependentUpon>

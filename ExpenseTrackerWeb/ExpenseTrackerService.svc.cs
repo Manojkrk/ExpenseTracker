@@ -91,5 +91,12 @@ namespace Manoj.ExpenseTracker.Web
         {
             return ExpenseTrackerController.DeleteTransac(transacId);
         }
+
+        [OperationContract]
+        [WebInvoke(Method = "POST", BodyStyle = WebMessageBodyStyle.WrappedRequest, ResponseFormat = WebMessageFormat.Json)]
+        public int CreateProfile(string profileName)
+        {
+            return ExpenseTrackerController.CreateProfile(profileName);
+        }
     }
 }

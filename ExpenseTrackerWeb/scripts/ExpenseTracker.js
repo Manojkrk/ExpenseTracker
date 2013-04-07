@@ -68,6 +68,35 @@ ViewModel.prototype.selectProfile = function(profile) {
     vm.currentProfile(profile);
 };
 
+ViewModel.prototype.openNewProfileDialog = function () {
+    document.getElementById('inputDialogLabel').innerText = "Enter Profile Name";
+    $('#inputDialogSave').button('option', 'label', 'Create');
+    $('#inputDialog').dialog('option', 'title', 'Create Profile').dialog('open');
+};
+
+ViewModel.prototype.createProfile = function (profileName) {
+    var self = this;
+    if (typeof profileName === "string" && profileName.trim()) {
+        $.ajax({
+            url: 'ExpenseTrackerService.svc/CreateProfile',
+            data: JSON.stringify({ profileName: profileName }),
+            success: function(profileId) {
+                if (profileId) {
+                    var newProfile = {
+                        Id: profileId,
+                        Name: profileName
+                    };
+                    self.profiles.push(newProfile);
+                    self.currentProfile(newProfile);
+                }
+            }
+        });
+    }
+    else {
+        alert('Enter a valid name for the Profile');
+    }
+};
+
 ViewModel.prototype.refreshPersons = function() {
     var self = this;
     this.persons([]);
@@ -427,7 +456,7 @@ function getMsTransac(transac) {
 }
 
 function convertJsonDate(str) {
-    if ($.type(str) === 'string' && /\/Date\(\d+[+-]\d+\)\//i.test(str)) {
+    if (typeof str === 'string' && /\/Date\(\d+[+-]\d+\)\//i.test(str)) {
         return new Date(parseInt(str.substring(6), 10));
     }
     else {
@@ -435,13 +464,26 @@ function convertJsonDate(str) {
     }
 }
 
-function initDashboard() {
-
-    $('#btnManageProfile').button({
-        icons: {
-            primary: 'ui-icon-gear'
-        },
-        text: false
+function initInputDialog() {
+    $('#inputDialog').dialog({
+        autoOpen: false,
+        modal: true,
+        buttons: [
+            {
+                text: "Save",
+                id: 'inputDialogSave',
+                click: function() {
+                    var profileName = document.getElementById('inputDialogText').value;
+                    vm.createProfile(profileName);
+                    $('#inputDialog').dialog('close');
+                }
+            },
+            {
+                text: 'Cancel',
+                click: function() {
+                    $('#inputDialog').dialog('close');
+                }
+            }]
     });
 }
 
@@ -504,8 +546,8 @@ function startup() {
         type: "POST",
         contentType: "application/json; charset=utf-8"
     });
+    initInputDialog();
     initEditTransac();
-    initDashboard();
     vm = new ViewModel();
     vm.profiles(profiles);
     vm.currentProfile(vm.profiles()[0]);

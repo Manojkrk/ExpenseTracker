@@ -2,6 +2,8 @@
 <%@ Register src="Usercontrols/BalanceList.ascx" tagPrefix="exp" tagName="BalanceList" %>
 <%@ Register src="Usercontrols/TransacList.ascx" tagPrefix="exp" tagName="TransacList" %>
 <%@ Register src="Usercontrols/EditTransac.ascx" tagPrefix="exp" tagName="EditTransac" %>
+<%@ Register Src="~/Usercontrols/InputBox.ascx" TagPrefix="exp" TagName="InputBox" %>
+
 <!DOCTYPE html>
 <html>
     <head runat="server">
@@ -52,7 +54,7 @@
                                     <li><a href="javascript:void(0)" data-bind="text: Name, visible: $data !== $root.currentProfile(), click: $root.selectProfile"></a></li>
                                     <!-- /ko -->
                                     <li><div class="dropdown-menu-separator"></div></li>
-                                    <li><a href="javascript:void(0)">New&hellip;</a></li>
+                                    <li><a href="javascript:void(0)" data-bind="click: openNewProfileDialog">New&hellip;</a></li>
                                 </ul>
                             </li>
                         </ul>
@@ -79,13 +81,14 @@
             <div class="exp-PageWidth">
                 <div>
                     <div class="exp-balanceSection">
-                        <exp:BalanceList ID="BalanceList1" runat="server" />
+                        <exp:BalanceList runat="server" />
                     </div>
                     <div class="exp-mainContent">
-                        <exp:TransacList ID="TransacList1" runat="server" />
+                        <exp:TransacList runat="server" />
                     </div>
                 </div>
-                <exp:EditTransac ID="EditTransac1" runat="server"/>
+                <exp:EditTransac runat="server"/>
+                <exp:InputBox runat="server" />
             </div>
         </form>
         

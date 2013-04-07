@@ -38,32 +38,5 @@ namespace Manoj.ExpenseTracker.Web {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton lnkSignOut;
-        
-        /// <summary>
-        /// BalanceList1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::Manoj.ExpenseTracker.Web.Usercontrols.BalanceList BalanceList1;
-        
-        /// <summary>
-        /// TransacList1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::Manoj.ExpenseTracker.Web.Usercontrols.TransacList TransacList1;
-        
-        /// <summary>
-        /// EditTransac1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::Manoj.ExpenseTracker.Web.Usercontrols.EditTransac EditTransac1;
     }
 }
