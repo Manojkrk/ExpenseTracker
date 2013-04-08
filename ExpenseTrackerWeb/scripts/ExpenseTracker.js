@@ -1,6 +1,4 @@
 ﻿'use strict';
-var persons = null;
-var currentRow = null;
 var editTransacChanged = false;
 var m = {
     editTransac: {
@@ -9,6 +7,15 @@ var m = {
         datepicker: $('#transacDatepicker')
     }
 };
+
+// Poly fill
+if (!Array.prototype.forEach) {
+    Array.prototype.forEach = function (fn, scope) {
+        for (var i = 0, len = this.length; i < len; ++i) {
+            fn.call(scope, this[i], i, this);
+        }
+    };
+}
 
 Array.prototype.lenientIndexOf = function(item) {
     for (var i = 0; i < this.length; i++) {
@@ -104,7 +111,6 @@ ViewModel.prototype.refreshPersons = function() {
         url: 'ExpenseTrackerService.svc/GetPersons',
         data: JSON.stringify({ profileId: self.currentProfile().Id }),
         success: function(result) {
-            persons = result;
             self.persons(result);
         }
     });

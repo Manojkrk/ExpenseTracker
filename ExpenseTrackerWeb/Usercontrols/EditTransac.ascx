@@ -42,7 +42,7 @@
             <div id="etrPersons" class="exp-inlineBlock" data-bind="foreach: $root.persons">
                 <div class="exp-fullWidth">
                     <input type="checkbox" data-bind="value: Id, checked: $root.selectedTransac().PersonIds, attr: { id: 'editTransacPerson_' + Id }" />
-                    <label data-bind="text: Name, attr: { for: 'editTransacPerson_' + Id }"></label>
+                    <label data-bind="text: Name, attr: { 'for': 'editTransacPerson_' + Id }"></label>
                 </div>
             </div>
         </div>

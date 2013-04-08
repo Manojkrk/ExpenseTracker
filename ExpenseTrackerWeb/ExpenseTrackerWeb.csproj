@@ -94,6 +94,7 @@
     <Content Include="scripts\login.js" />
     <Content Include="scripts\vendor\jquery-ui-1.10.1.custom.js" />
     <Content Include="scripts\vendor\jquery-ui-1.10.1.custom.min.js" />
+    <Content Include="scripts\vendor\json2.js" />
     <Content Include="scripts\vendor\knockout-2.2.1.js" />
     <Content Include="scripts\vendor\plugins.js" />
     <Content Include="scripts\vendor\bootstrap.js" />

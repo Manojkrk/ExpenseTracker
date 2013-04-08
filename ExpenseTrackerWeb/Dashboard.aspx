@@ -39,7 +39,7 @@
                             </li>
                             <li><a href="javascript:void(0)" data-bind="click: openNewTransacDialog, enable: enableNewTransac">New Transaction</a></li>
                         </ul>
-                        <ul class="nav">
+                        <ul class="nav" data-bind="visible: profiles().length">
                             <li class="dropdown">
                                 <a href="#"
                                    class="dropdown-toggle"
@@ -51,7 +51,9 @@
                                     <li><a href="javascript:void(0)">Manage&hellip;</a></li>
                                     <li><div class="dropdown-menu-separator" data-bind="visible: profiles().length > 1"></div></li>
                                     <!-- ko foreach: profiles -->
-                                    <li><a href="javascript:void(0)" data-bind="text: Name, visible: $data !== $root.currentProfile(), click: $root.selectProfile"></a></li>
+                                    <li data-bind="visible: $data !== $root.currentProfile()">
+                                        <a href="javascript:void(0)" data-bind="text: Name, click: $root.selectProfile"></a>
+                                    </li>
                                     <!-- /ko -->
                                     <li><div class="dropdown-menu-separator"></div></li>
                                     <li><a href="javascript:void(0)" data-bind="click: openNewProfileDialog">New&hellip;</a></li>
@@ -106,6 +108,10 @@
         </script>
         <script src="scripts/vendor/knockout-2.2.1.js"> </script>
         
+        <script>
+            window.JSON || document.write('<script src="scripts/vendor/json2.js"><\/script>');
+        </script>
+
         <script>
             var profiles = <%= Profiles %>;
         </script>
