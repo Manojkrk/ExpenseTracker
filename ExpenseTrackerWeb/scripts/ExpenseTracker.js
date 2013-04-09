@@ -51,7 +51,7 @@ function ViewModel() {
         return this.transacs() === null;
     }, this);
     this.hideBalances = ko.computed(function() {
-        return this.balances().TotalBalance === undefined;
+        return !this.balances().BalanceList || !this.persons().length;
     }, this);
 
     // Subscriptions
@@ -141,6 +141,18 @@ ViewModel.prototype.refreshBalances = function() {
             self.balances(result);
         }
     });
+};
+
+ViewModel.prototype.getPersonBalance = function(personId) {
+    var balanceList = this.balances().BalanceList;
+    if (balanceList) {
+        for (var i = 0, len = balanceList.length; i < len; i++) {
+            if (balanceList[i].PersonId === personId) {
+                return balanceList[i].Amount;
+            }
+        }
+    }
+    return 0;
 };
 
 ViewModel.prototype.openEditTransac = function(transac, e) {

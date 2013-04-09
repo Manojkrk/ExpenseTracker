@@ -2,12 +2,12 @@
 <div id="divBalances">
     <table class="table table-bordered hidden" data-bind="css: { hidden: hideBalances }">
         <caption>Balances</caption>
-        <tbody data-bind="foreach: balances().BalanceList">
-            <tr data-bind="css: { 'exp-thresholdLow': Amount < 0 }">
-                <td data-bind="text: Person.Name"></td>
+        <tbody data-bind="foreach: persons">
+            <tr data-bind="css: { 'exp-thresholdLow': $root.getPersonBalance(Id) < 0 }">
+                <td data-bind="text: Name"></td>
                 <td class="exp-alignRight">
                     &#8377;
-                    <!-- ko text: Amount --><!-- /ko -->
+                    <!-- ko text: $root.getPersonBalance(Id) --><!-- /ko -->
                 </td>
             </tr>
         </tbody>

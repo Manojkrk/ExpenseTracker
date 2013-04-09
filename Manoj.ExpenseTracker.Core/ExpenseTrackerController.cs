@@ -49,7 +49,6 @@ namespace Manoj.ExpenseTracker.Core
 
         public static Balances GetBalances(int profileId)
         {
-            var persons = GetPersons(profileId);
             var command = Db.GetStoredProcCommand("Sp_GetBalances");
             Db.AddInParameter(command,"profileId", DbType.Int32, profileId);
             Db.AddOutParameter(command,"total", DbType.Currency, 30);
@@ -57,14 +56,11 @@ namespace Manoj.ExpenseTracker.Core
             var dataTable = dataSet.Tables[0];
             var balances = new Balances
                 {
-                    BalanceList = (from person in persons
-                                   where person.IsActive
+                    BalanceList = (from DataRow row in dataTable.Rows
                                    select new Balance
                                        {
-                                           Person = person,
-                                           Amount = (from DataRow row in dataTable.Rows
-                                                     where row.GetValue<int>("personId") == person.Id
-                                                     select row.GetValue<decimal>("balance")).SingleOrDefault()
+                                           PersonId = row.GetValue<int>("personId"),
+                                           Amount = row.GetValue<decimal>("balance")
                                        }).ToList(),
                     TotalBalance = Convert.ToDecimal(Db.GetParameterValue(command, "total"))
                 };

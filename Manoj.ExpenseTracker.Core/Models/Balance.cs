@@ -2,7 +2,7 @@
 {
     public class Balance
     {
-        public Person Person { get; set; }
+        public int PersonId { get; set; }
         public decimal Amount { get; set; }
     }
 }
